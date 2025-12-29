@@ -105,6 +105,61 @@ neo-ledger/
    ```
 3. Output files will be written to the `data/` folder
 
+### Using clasp CLI
+
+[clasp](https://github.com/google/clasp) is Google's command-line tool for managing Apps Script projects.
+
+#### Installation
+
+```bash
+npm install -g @google/clasp
+```
+
+#### Authentication
+
+```bash
+clasp login
+```
+
+This opens a browser for Google OAuth. Once authenticated, credentials are stored locally.
+
+#### Cloning an Existing Script
+
+```bash
+clasp clone <scriptId>
+```
+
+The Script ID can be found in your Apps Script project under **Project Settings**.
+
+#### Push Local Changes to Google
+
+```bash
+clasp push
+```
+
+Uploads local `.js` and `appsscript.json` files to the Apps Script project.
+
+#### Pull Remote Changes
+
+```bash
+clasp pull
+```
+
+Downloads the latest version from Google Apps Script to your local folder.
+
+#### Open in Browser
+
+```bash
+clasp open
+```
+
+Opens the Apps Script editor in your default browser.
+
+#### Useful Flags
+
+- `clasp push --watch` – Automatically push on file changes
+- `clasp push --force` – Overwrite remote without confirmation
+
 ## Main Functions
 
 | Function | Description |
