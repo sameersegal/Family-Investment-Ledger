@@ -1,0 +1,19 @@
+# Ignore local development files
+test-local.js
+csv-to-json.js
+
+# Ignore data folder
+data/**
+
+# Ignore node modules if any
+node_modules/**
+
+# Ignore git files
+.git/**
+.gitignore
+
+# Ignore other config files
+.claspignore
+package.json
+package-lock.json
+*.md
