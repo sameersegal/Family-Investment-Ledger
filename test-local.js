@@ -26,6 +26,7 @@ const context = {
     Math: Math,
     JSON: JSON,
     Error: Error,
+    isNaN: isNaN,
     // IS_LOCAL will be set by Helpers.js
 };
 
@@ -47,10 +48,72 @@ console.log('=== Neo Ledger Local Test ===\n');
 console.log('IS_LOCAL:', context.IS_LOCAL);
 console.log('');
 
+/**** End State Validation ****/
+function validateEndState() {
+    const lots = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'Lots_Current.json'), 'utf8'));
+    const assertions = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'Assertions.json'), 'utf8'));
+
+    const errors = [];
+
+    // Helper to sum quantities by owner, security, and optionally account
+    function sumQty(owner, securityId, accountId) {
+        return lots
+            .filter(l => l.OwnerId === owner &&
+                l.SecurityId === securityId &&
+                (!accountId || l.AccountId === accountId))
+            .reduce((sum, l) => sum + l.OpenQty, 0);
+    }
+
+    // Run assertions
+    for (const a of assertions) {
+        switch (a.type) {
+            case 'quantity':
+                const actual = sumQty(a.owner, a.security, a.account);
+                if (actual !== a.expected) {
+                    errors.push(`FAIL: ${a.desc} - expected ${a.expected}, got ${actual}`);
+                }
+                break;
+
+            case 'no_negative':
+                const negatives = lots.filter(l => l.OpenQty < 0);
+                if (negatives.length > 0) {
+                    errors.push(`FAIL: ${a.desc} - Negative quantities found: ${negatives.map(l => `${l.LotId}:${l.SecurityId}=${l.OpenQty}`).join(", ")}`);
+                }
+                break;
+
+            case 'no_invalid':
+                const invalid = lots.filter(l => isNaN(l.OpenQty) || l.OpenQty === undefined || l.OpenQty === null);
+                if (invalid.length > 0) {
+                    errors.push(`FAIL: ${a.desc} - Invalid quantities found: ${invalid.map(l => `${l.LotId}:${l.SecurityId}=${l.OpenQty}`).join(", ")}`);
+                }
+                break;
+
+            default:
+                console.warn(`Unknown assertion type: ${a.type}`);
+        }
+    }
+
+    // Report results
+    if (errors.length > 0) {
+        console.error("\n=== VALIDATION ERRORS ===");
+        errors.forEach(e => console.error(e));
+        console.error("=========================\n");
+        throw new Error(`Validation failed with ${errors.length} error(s)`);
+    } else {
+        console.log("✓ All end state validations passed");
+    }
+}
+
 // Run the main rebuild function
 try {
     console.log('Running rebuildAllDerived()...\n');
-    vm.runInContext('rebuildAllDerived()', context); console.log('\n=== Complete ===');
+    vm.runInContext('rebuildAllDerived()', context);
+
+    // Run validations after rebuild
+    console.log('\nRunning validations...');
+    validateEndState();
+
+    console.log('\n=== Complete ===');
 } catch (error) {
     console.error('Error:', error.message);
     console.error(error.stack);

@@ -251,7 +251,9 @@ function rebuildLots() {
     }
   });
 
-  writeTable("Lots_Current", lots.filter(l => l.OpenQty > 0));
+  const finalLots = lots.filter(l => l.OpenQty > 0);
+
+  writeTable("Lots_Current", finalLots);
   writeTable("LotConsumes", consumes);
 }
 
