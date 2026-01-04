@@ -1,0 +1,73 @@
+[
+  {
+    "meta": "DATA: Family portfolio lots for tax-efficient cash raising analysis. | DATE: 2026-01-04 | OWNERS: ALICE, BOB | TICKERS: AAPL, GOOG, GOOGL, HDFCBANK | LOTS: 6 (6 L, 0 S) | TOTAL_COST_INR: 3,256,725 | COLUMNS: OwnerId=owner, Ticker=stock, Qty=shares, CostINR=cost basis, Type=L(long-term)/S(short-term), ToLTCG=days until long-term (blank=already L), ValueINR=current value, GainINR=unrealized gain, TaxINR=estimated tax if sold | RULES: Type L taxed at 10.0%/12.5% (lower). Type S taxed at slab/higher rates. Negative GainINR=loss (TaxINR=0). To minimize tax: sell losses first, then L, then low-gain lots.",
+    "lots": [
+      {
+        "OwnerId": "ALICE",
+        "Ticker": "AAPL",
+        "Qty": 70,
+        "CostINR": 262500,
+        "Type": "L",
+        "ToLTCG": "",
+        "ValueINR": 1496250,
+        "GainINR": 1233750,
+        "TaxINR": 154219
+      },
+      {
+        "OwnerId": "ALICE",
+        "Ticker": "AAPL",
+        "Qty": 50,
+        "CostINR": 207625,
+        "Type": "L",
+        "ToLTCG": "",
+        "ValueINR": 1068750,
+        "GainINR": 861125,
+        "TaxINR": 107641
+      },
+      {
+        "OwnerId": "ALICE",
+        "Ticker": "HDFCBANK",
+        "Qty": 300,
+        "CostINR": 30000,
+        "Type": "L",
+        "ToLTCG": "",
+        "ValueINR": "",
+        "GainINR": "",
+        "TaxINR": ""
+      },
+      {
+        "OwnerId": "BOB",
+        "Ticker": "GOOG",
+        "Qty": 950,
+        "CostINR": 824600,
+        "Type": "L",
+        "ToLTCG": "",
+        "ValueINR": 16001325,
+        "GainINR": 15176725,
+        "TaxINR": 1897091
+      },
+      {
+        "OwnerId": "BOB",
+        "Ticker": "GOOG",
+        "Qty": 2000,
+        "CostINR": 1064000,
+        "Type": "L",
+        "ToLTCG": "",
+        "ValueINR": 33687000,
+        "GainINR": 32623000,
+        "TaxINR": 4077875
+      },
+      {
+        "OwnerId": "BOB",
+        "Ticker": "GOOGL",
+        "Qty": 1000,
+        "CostINR": 868000,
+        "Type": "L",
+        "ToLTCG": "",
+        "ValueINR": 16672500,
+        "GainINR": 15804500,
+        "TaxINR": 1975563
+      }
+    ]
+  }
+]

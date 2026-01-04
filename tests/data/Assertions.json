@@ -1,0 +1,42 @@
+[
+    {
+        "type": "quantity",
+        "owner": "ALICE",
+        "security": "AAPL",
+        "account": "ACCT001",
+        "expected": 120,
+        "desc": "ALICE/ACCT001 AAPL (100+50-30)=120, no post-2020 splits"
+    },
+    {
+        "type": "quantity",
+        "owner": "BOB",
+        "security": "GOOGL",
+        "account": "ACCT002",
+        "expected": 1000,
+        "desc": "BOB/ACCT002 GOOGL: 50 pre-2014 * 20 (2022 split) = 1000"
+    },
+    {
+        "type": "quantity",
+        "owner": "BOB",
+        "security": "GOOG",
+        "account": "ACCT002",
+        "expected": 2950,
+        "desc": "BOB/ACCT002 GOOG: (50 from reorg + 100 bought) * 20 split - 50 sold = 2950"
+    },
+    {
+        "type": "quantity",
+        "owner": "ALICE",
+        "security": "HDFCBANK",
+        "account": "ACCT003",
+        "expected": 300,
+        "desc": "ALICE/ACCT003 HDFCBANK (500-200)=300"
+    },
+    {
+        "type": "no_negative",
+        "desc": "No negative quantities in any lot"
+    },
+    {
+        "type": "no_invalid",
+        "desc": "No NaN/undefined/null quantities"
+    }
+]

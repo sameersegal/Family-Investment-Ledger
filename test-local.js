@@ -5,13 +5,36 @@
  * Make sure you have sample data JSON files in the data/ folder.
  * 
  * Usage:
- *   node test-local.js
+ *   node test-local.js              # Uses real data from data/ folder
+ *   node test-local.js --test       # Uses test data from tests/data/ folder
+ *   node test-local.js --data=path  # Uses data from custom path
  */
 
 // For Node.js compatibility, we need to load files differently
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+
+// Parse command line arguments for data folder selection
+function getDataFolder() {
+    const args = process.argv.slice(2);
+
+    for (const arg of args) {
+        if (arg === '--test') {
+            return path.join(__dirname, 'tests', 'data');
+        }
+        if (arg.startsWith('--data=')) {
+            const customPath = arg.substring('--data='.length);
+            // Support both absolute and relative paths
+            return path.isAbsolute(customPath) ? customPath : path.join(__dirname, customPath);
+        }
+    }
+
+    // Default to real data folder
+    return path.join(__dirname, 'data');
+}
+
+const DATA_FOLDER = getDataFolder();
 
 // Create a context with globals that mimic Apps Script environment
 const context = {
@@ -37,8 +60,9 @@ vm.createContext(context);
 const helpersCode = fs.readFileSync(path.join(__dirname, 'Helpers.js'), 'utf8');
 vm.runInContext(helpersCode, context);
 
-// Enable local mode
+// Enable local mode and set data folder
 context.IS_LOCAL = true;
+context.DATA_FOLDER = DATA_FOLDER;
 
 // Load Code.js
 const codeCode = fs.readFileSync(path.join(__dirname, 'Code.js'), 'utf8');
@@ -46,12 +70,13 @@ vm.runInContext(codeCode, context);
 
 console.log('=== Neo Ledger Local Test ===\n');
 console.log('IS_LOCAL:', context.IS_LOCAL);
+console.log('Data folder:', DATA_FOLDER);
 console.log('');
 
 /**** End State Validation ****/
 function validateEndState() {
-    const lots = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'Lots_Current.json'), 'utf8'));
-    const assertions = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'Assertions.json'), 'utf8'));
+    const lots = JSON.parse(fs.readFileSync(path.join(DATA_FOLDER, 'Lots_Current.json'), 'utf8'));
+    const assertions = JSON.parse(fs.readFileSync(path.join(DATA_FOLDER, 'Assertions.json'), 'utf8'));
 
     const errors = [];
 

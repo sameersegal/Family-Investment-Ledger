@@ -1,0 +1,49 @@
+[
+    {
+        "ActionId": "AAPL_SPLIT_2014",
+        "ActionDate": "2014-06-09",
+        "ActionType": "SPLIT",
+        "SecurityId": "AAPL",
+        "SplitNumerator": 7,
+        "SplitDenominator": 1,
+        "Notes": "Apple 7-for-1 stock split",
+        "SourceRef": "AAPL_SPLIT_HISTORY"
+    },
+    {
+        "ActionId": "GOOGL_CLASS_REORG_2014",
+        "ActionDate": "2014-04-03",
+        "ActionType": "CLASS_REORG",
+        "SecurityId": "GOOGL",
+        "Notes": "Alphabet class reorganization - GOOGL holders receive 1 GOOG share per GOOGL share"
+    },
+    {
+        "ActionId": "AAPL_SPLIT_2020",
+        "ActionDate": "2020-08-31",
+        "ActionType": "SPLIT",
+        "SecurityId": "AAPL",
+        "SplitNumerator": 4,
+        "SplitDenominator": 1,
+        "Notes": "Apple 4-for-1 stock split",
+        "SourceRef": "AAPL_SPLIT_HISTORY"
+    },
+    {
+        "ActionId": "GOOGL_SPLIT_2022",
+        "ActionDate": "2022-07-18",
+        "ActionType": "SPLIT",
+        "SecurityId": "GOOGL",
+        "SplitNumerator": 20,
+        "SplitDenominator": 1,
+        "Notes": "Alphabet 20-for-1 stock split",
+        "SourceRef": "GOOGL_SPLIT_HISTORY"
+    },
+    {
+        "ActionId": "GOOG_SPLIT_2022",
+        "ActionDate": "2022-07-18",
+        "ActionType": "SPLIT",
+        "SecurityId": "GOOG",
+        "SplitNumerator": 20,
+        "SplitDenominator": 1,
+        "Notes": "Alphabet 20-for-1 stock split",
+        "SourceRef": "GOOG_SPLIT_HISTORY"
+    }
+]

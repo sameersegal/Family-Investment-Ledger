@@ -1,2 +1,14 @@
-data
+# Ignore real data folder (contains personal data)
+/data
+/csv
+
+# But allow test data to be committed
+!tests/data
+
 .clasp.json
+
+credentials.json
+token.json
+
+# JS
+node_modules

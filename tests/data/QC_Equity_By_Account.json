@@ -1,0 +1,34 @@
+[
+  {
+    "OwnerId": "BOB",
+    "AccountId": "ACCT002",
+    "BrokerId": "BROKER2",
+    "Symbol": "GOOGL",
+    "Quantity": 1000,
+    "SecurityId": "GOOGL"
+  },
+  {
+    "OwnerId": "BOB",
+    "AccountId": "ACCT002",
+    "BrokerId": "BROKER2",
+    "Symbol": "GOOG",
+    "Quantity": 2950,
+    "SecurityId": "GOOG"
+  },
+  {
+    "OwnerId": "ALICE",
+    "AccountId": "ACCT001",
+    "BrokerId": "BROKER1",
+    "Symbol": "AAPL",
+    "Quantity": 120,
+    "SecurityId": "AAPL"
+  },
+  {
+    "OwnerId": "ALICE",
+    "AccountId": "ACCT003",
+    "BrokerId": "BROKER2",
+    "Symbol": "HDFCBANK",
+    "Quantity": 300,
+    "SecurityId": "HDFCBANK"
+  }
+]

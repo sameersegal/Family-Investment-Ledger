@@ -1,0 +1,50 @@
+[
+    {
+        "SecurityId": "AAPL",
+        "Price": 250.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    },
+    {
+        "SecurityId": "AMZN",
+        "Price": 225.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    },
+    {
+        "SecurityId": "MSFT",
+        "Price": 430.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    },
+    {
+        "SecurityId": "NVDA",
+        "Price": 145.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    },
+    {
+        "SecurityId": "TSLA",
+        "Price": 420.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    },
+    {
+        "SecurityId": "GOOGL",
+        "Price": 195.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    },
+    {
+        "SecurityId": "GOOG",
+        "Price": 197.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    },
+    {
+        "SecurityId": "BRK.B",
+        "Price": 470.00,
+        "Currency": "USD",
+        "FXRate": 85.50
+    }
+]

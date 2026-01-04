@@ -1,6 +1,7 @@
 # Ignore local development files
 test-local.js
 csv-to-json.js
+download-sheets.js
 
 # Ignore data folder
 data/**
@@ -18,6 +19,8 @@ package.json
 package-lock.json
 *.md
 
+# Ignore Test data
+tests
 
-# Ignore Original
-Original.js
+# Ignore credentials
+credentials.json

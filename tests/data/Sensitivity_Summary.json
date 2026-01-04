@@ -1,0 +1,50 @@
+[
+  {
+    "OwnerId": "ALICE",
+    "Ticker": "AAPL",
+    "TotalQty": 120,
+    "TotalCostINR": 470125,
+    "TotalValueINR": 2565000,
+    "TotalGainINR": 2094875,
+    "GainPct": 446,
+    "TotalTaxINR": 261860,
+    "LotCount": 2,
+    "TypeMix": "L"
+  },
+  {
+    "OwnerId": "ALICE",
+    "Ticker": "HDFCBANK",
+    "TotalQty": 300,
+    "TotalCostINR": 30000,
+    "TotalValueINR": 0,
+    "TotalGainINR": 0,
+    "GainPct": 0,
+    "TotalTaxINR": 0,
+    "LotCount": 1,
+    "TypeMix": "L"
+  },
+  {
+    "OwnerId": "BOB",
+    "Ticker": "GOOG",
+    "TotalQty": 2950,
+    "TotalCostINR": 1888600,
+    "TotalValueINR": 49688325,
+    "TotalGainINR": 47799725,
+    "GainPct": 2531,
+    "TotalTaxINR": 5974966,
+    "LotCount": 2,
+    "TypeMix": "L"
+  },
+  {
+    "OwnerId": "BOB",
+    "Ticker": "GOOGL",
+    "TotalQty": 1000,
+    "TotalCostINR": 868000,
+    "TotalValueINR": 16672500,
+    "TotalGainINR": 15804500,
+    "GainPct": 1821,
+    "TotalTaxINR": 1975563,
+    "LotCount": 1,
+    "TypeMix": "L"
+  }
+]

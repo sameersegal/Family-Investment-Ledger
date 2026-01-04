@@ -696,6 +696,258 @@ function buildEquityByAccountQC() {
   sh.getRange(2, 1, arrayRows.length, 6).setValues(arrayRows);
 }
 
+/**** Sensitivity Analysis Data ****/
+/**
+ * Build concise lot data for sensitivity analysis with LLMs.
+ * Outputs essential columns for "how to raise cash while minimizing tax" analysis.
+ * 
+ * For Sheets mode: uses GOOGLEFINANCE for live prices.
+ * For local mode: uses Prices.json if available.
+ * 
+ * Concise columns optimized for LLM context:
+ * - OwnerId, Ticker, AccountId - identification
+ * - Qty, CostINR - position
+ * - GainType, DaysToLTCG, TaxRate - tax classification
+ * - ValueINR, GainINR, TaxINR - current value & tax estimate
+ */
+function buildSensitivityData() {
+  const lots = readTable("Lots_Current");
+  const secs = Object.fromEntries(
+    readTable("Securities").map(s => [s.SecurityId, s])
+  );
+  const tax = Object.fromEntries(
+    readTable("Config").map(t => [t.AssetClass, t])
+  );
+
+  const today = new Date();
+
+  // Build concise analysis data
+  const analysis = lots.filter(l => l.OpenQty > 0).map(l => {
+    const sec = secs[l.SecurityId] || {};
+    const rule = tax[sec.AssetClass] || {};
+
+    const buyDate = new Date(l.BuyDate);
+    const holdingDays = daysBetween(buyDate, today);
+    const ltDays = Number(rule.HoldingPeriod_LT_Days) || 365;
+    const gainType = holdingDays >= ltDays ? "LTCG" : "STCG";
+    const daysToLTCG = gainType === "LTCG" ? 0 : ltDays - holdingDays;
+
+    const taxRateStr = gainType === "LTCG" ? rule.LTCG_Tax_Rate : rule.STCG_Tax_Rate;
+    const taxRate = parseTaxRate(taxRateStr);
+    const currency = sec.TradingCurrency || "USD";
+    const ticker = sec.Ticker || l.SecurityId;
+
+    return {
+      OwnerId: l.OwnerId,
+      Ticker: ticker,
+      Qty: l.OpenQty,
+      CostINR: Math.round(l.CostINR),
+      Type: gainType === "LTCG" ? "L" : "S",
+      ToLTCG: daysToLTCG > 0 ? daysToLTCG : "",
+      // These will be formulas in Sheets mode
+      ValueINR: "",
+      GainINR: "",
+      TaxINR: "",
+      // Internal use for formulas and sorting
+      _currency: currency,
+      _ticker: ticker,
+      _buyDate: l.BuyDate,
+      _taxRate: taxRate
+    };
+  });
+
+  // Sort by owner, then ticker, then buy date
+  analysis.sort((a, b) => {
+    if (a.OwnerId !== b.OwnerId) return a.OwnerId.localeCompare(b.OwnerId);
+    if (a.Ticker !== b.Ticker) return a.Ticker.localeCompare(b.Ticker);
+    return new Date(a._buyDate) - new Date(b._buyDate);
+  });
+
+  // In local mode, try to use Prices.json for values
+  if (IS_LOCAL) {
+    let prices = {};
+    let fxRates = {};
+    try {
+      const pricesData = readTable("Prices");
+      prices = Object.fromEntries(pricesData.map(p => [p.SecurityId, Number(p.Price)]));
+      fxRates = Object.fromEntries(pricesData.filter(p => p.FXRate).map(p => [p.Currency, Number(p.FXRate)]));
+    } catch (e) {
+      // Prices not available
+    }
+
+    analysis.forEach(a => {
+      const priceNative = prices[a._ticker] || null;
+      const fxRate = fxRates[a._currency] || (a._currency === "INR" ? 1 : null);
+
+      if (priceNative && fxRate) {
+        const valueINR = a.Qty * priceNative * fxRate;
+        const gainINR = valueINR - a.CostINR;
+        a.ValueINR = Math.round(valueINR);
+        a.GainINR = Math.round(gainINR);
+        a.TaxINR = gainINR > 0 ? Math.round(gainINR * a._taxRate) : 0;
+      }
+    });
+
+    // Build meta info for LLM context (before removing internal fields)
+    const meta = buildSensitivityMeta_(analysis);
+
+    // Remove internal fields before writing
+    analysis.forEach(a => {
+      delete a._currency;
+      delete a._ticker;
+      delete a._buyDate;
+      delete a._taxRate;
+    });
+
+    // Write meta + data as structured JSON for local
+    const output = { meta: meta, lots: analysis };
+    writeTable("Sensitivity_Data", [output]);
+    buildSensitivitySummary_(analysis);
+    return;
+  }
+
+  // Sheets mode: write data and add GOOGLEFINANCE formulas
+  const headers = [
+    "OwnerId", "Ticker",
+    "Qty", "CostINR",
+    "Type", "ToLTCG",
+    "ValueINR", "GainINR", "TaxINR"
+  ];
+
+  // Build meta info for LLM context
+  const meta = buildSensitivityMeta_(analysis);
+
+  const sh = resetSheet("Sensitivity_Data");
+
+  // Row 1: Meta information
+  sh.getRange(1, 1).setValue(meta);
+
+  // Row 2: Headers
+  sh.getRange(2, 1, 1, headers.length).setValues([headers]);
+
+  if (analysis.length === 0) return;
+
+  // Write static data columns starting from row 3
+  const staticHeaders = headers.slice(0, 6);
+  const staticData = analysis.map(r => staticHeaders.map(h => r[h]));
+  sh.getRange(3, 1, staticData.length, staticHeaders.length).setValues(staticData);
+
+  // Add formulas for dynamic columns (7-9)
+  // Column indices (1-based): 
+  // B=Ticker, C=Qty, D=CostINR
+  // G=ValueINR, H=GainINR, I=TaxINR
+
+  for (let i = 0; i < analysis.length; i++) {
+    const row = i + 3; // Data starts at row 3 now
+    const currency = analysis[i]._currency;
+    const taxRate = analysis[i]._taxRate;
+
+    // ValueINR (G) = Qty * GOOGLEFINANCE(Ticker) * FXRate
+    if (currency === "INR") {
+      sh.getRange(row, 7).setFormula(
+        `=IFERROR(ROUND(C${row}*GOOGLEFINANCE(B${row})), "")`
+      );
+    } else {
+      sh.getRange(row, 7).setFormula(
+        `=IFERROR(ROUND(C${row}*GOOGLEFINANCE(B${row})*GOOGLEFINANCE("CURRENCY:${currency}INR")), "")`
+      );
+    }
+
+    // GainINR (H) = ValueINR - CostINR
+    sh.getRange(row, 8).setFormula(
+      `=IF(G${row}<>"", G${row}-D${row}, "")`
+    );
+
+    // TaxINR (I) = ROUND(MAX(0, GainINR) * TaxRate)
+    sh.getRange(row, 9).setFormula(
+      `=IF(H${row}<>"", ROUND(MAX(0, H${row})*${taxRate}), "")`
+    );
+  }
+}
+
+/**
+ * Build meta information string for LLM context
+ */
+function buildSensitivityMeta_(analysis) {
+  const today = new Date().toISOString().split('T')[0];
+  const owners = [...new Set(analysis.map(a => a.OwnerId))].sort();
+  const tickers = [...new Set(analysis.map(a => a.Ticker))].sort();
+  const totalLots = analysis.length;
+
+  const totalCost = analysis.reduce((sum, a) => sum + a.CostINR, 0);
+  const stcgCount = analysis.filter(a => a.Type === "S").length;
+  const ltcgCount = analysis.filter(a => a.Type === "L").length;
+
+  // Get unique tax rates for context
+  const taxRates = [...new Set(analysis.map(a => a._taxRate))].sort((a, b) => a - b);
+
+  const meta = [
+    `DATA: Family portfolio lots for tax-efficient cash raising analysis.`,
+    `DATE: ${today}`,
+    `OWNERS: ${owners.join(", ")}`,
+    `TICKERS: ${tickers.join(", ")}`,
+    `LOTS: ${totalLots} (${ltcgCount} L, ${stcgCount} S)`,
+    `TOTAL_COST_INR: ${Math.round(totalCost).toLocaleString()}`,
+    `COLUMNS: OwnerId=owner, Ticker=stock, Qty=shares, CostINR=cost basis, Type=L(long-term)/S(short-term), ToLTCG=days until long-term (blank=already L), ValueINR=current value, GainINR=unrealized gain, TaxINR=estimated tax if sold`,
+    `RULES: Type L taxed at ${taxRates.filter(r => r < 0.2).map(r => (r * 100).toFixed(1) + '%').join('/')} (lower). Type S taxed at slab/higher rates. Negative GainINR=loss (TaxINR=0). To minimize tax: sell losses first, then L, then low-gain lots.`
+  ].join(" | ");
+
+  return meta;
+}
+
+/**
+ * Build summary table from analysis data (helper function)
+ */
+function buildSensitivitySummary_(analysis) {
+  const summary = {};
+  analysis.forEach(a => {
+    const key = `${a.OwnerId}|${a.Ticker}`;
+    if (!summary[key]) {
+      summary[key] = {
+        OwnerId: a.OwnerId,
+        Ticker: a.Ticker,
+        TotalQty: 0,
+        TotalCostINR: 0,
+        TotalValueINR: 0,
+        TotalGainINR: 0,
+        TotalTaxINR: 0,
+        LotCount: 0,
+        HasS: false,
+        HasL: false
+      };
+    }
+    const s = summary[key];
+    s.TotalQty += a.Qty;
+    s.TotalCostINR += a.CostINR;
+    s.TotalValueINR += a.ValueINR || 0;
+    s.TotalGainINR += a.GainINR || 0;
+    s.TotalTaxINR += a.TaxINR || 0;
+    s.LotCount += 1;
+    if (a.Type === "S") s.HasS = true;
+    if (a.Type === "L") s.HasL = true;
+  });
+
+  const summaryRows = Object.values(summary).map(s => ({
+    OwnerId: s.OwnerId,
+    Ticker: s.Ticker,
+    TotalQty: s.TotalQty,
+    TotalCostINR: s.TotalCostINR,
+    TotalValueINR: s.TotalValueINR,
+    TotalGainINR: s.TotalGainINR,
+    GainPct: s.TotalCostINR > 0 ? Math.round((s.TotalGainINR / s.TotalCostINR) * 100) : 0,
+    TotalTaxINR: s.TotalTaxINR,
+    LotCount: s.LotCount,
+    TypeMix: s.HasS && s.HasL ? "MIX" : (s.HasL ? "L" : "S")
+  }));
+
+  summaryRows.sort((a, b) => {
+    if (a.OwnerId !== b.OwnerId) return a.OwnerId.localeCompare(b.OwnerId);
+    return a.Ticker.localeCompare(b.Ticker);
+  });
+
+  writeTable("Sensitivity_Summary", summaryRows);
+}
+
 /**** Run All ****/
 function rebuildAllDerived() {
   rebuildLots();
@@ -708,6 +960,7 @@ function rebuildAllDerived() {
   buildPortfolioSheetFromLedger_("IND Portfolio", "India", "India");
   buildPortfolioSheetFromLedger_("US Portfolio", "US", "USA");
   buildEquityByAccountQC();
+  buildSensitivityData();
 }
 
 

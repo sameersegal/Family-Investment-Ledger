@@ -1,0 +1,32 @@
+[
+  {
+    "OwnerId": "ALICE",
+    "FinancialYear": "2022-2023",
+    "AssetClass": "FOREIGN_EQUITY",
+    "GainType": "STCG",
+    "GrossGainINR": 27900,
+    "ExemptINR": 0,
+    "TaxableINR": 27900,
+    "TaxRate": "SLAB"
+  },
+  {
+    "OwnerId": "ALICE",
+    "FinancialYear": "2024-2025",
+    "AssetClass": "IND_EQUITY",
+    "GainType": "LTCG",
+    "GrossGainINR": 4000,
+    "ExemptINR": 4000,
+    "TaxableINR": 0,
+    "TaxRate": "10%"
+  },
+  {
+    "OwnerId": "BOB",
+    "FinancialYear": "2024-2025",
+    "AssetClass": "FOREIGN_EQUITY",
+    "GainType": "LTCG",
+    "GrossGainINR": 682850,
+    "ExemptINR": 0,
+    "TaxableINR": 682850,
+    "TaxRate": "12.5%"
+  }
+]

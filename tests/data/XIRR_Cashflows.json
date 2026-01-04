@@ -1,0 +1,123 @@
+[
+  {
+    "Portfolio": "US",
+    "OwnerId": "ALICE",
+    "SecurityId": "AAPL",
+    "AssetId": "AAPL",
+    "Symbol": "AAPL",
+    "Quantity": "",
+    "FlowDate": "2022-01-15T00:00:00.000Z",
+    "CashFlow": -5000,
+    "FlowType": "BUY"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "ALICE",
+    "SecurityId": "AAPL",
+    "AssetId": "AAPL",
+    "Symbol": "AAPL",
+    "Quantity": "",
+    "FlowDate": "2022-02-20T00:00:00.000Z",
+    "CashFlow": -2750,
+    "FlowType": "BUY"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "ALICE",
+    "SecurityId": "AAPL",
+    "AssetId": "AAPL",
+    "Symbol": "AAPL",
+    "Quantity": "",
+    "FlowDate": "2022-06-10T00:00:00.000Z",
+    "CashFlow": 1800,
+    "FlowType": "SELL"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "BOB",
+    "SecurityId": "GOOGL",
+    "AssetId": "ALPHABET",
+    "Symbol": "GOOGL",
+    "Quantity": "",
+    "FlowDate": "2014-01-10T00:00:00.000Z",
+    "CashFlow": -28000,
+    "FlowType": "BUY"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "BOB",
+    "SecurityId": "GOOG",
+    "AssetId": "ALPHABET",
+    "Symbol": "GOOG",
+    "Quantity": "",
+    "FlowDate": "2022-03-15T00:00:00.000Z",
+    "CashFlow": -14000,
+    "FlowType": "BUY"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "BOB",
+    "SecurityId": "GOOG",
+    "AssetId": "ALPHABET",
+    "Symbol": "GOOG",
+    "Quantity": "",
+    "FlowDate": "2024-08-01T00:00:00.000Z",
+    "CashFlow": 8750,
+    "FlowType": "SELL"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "ALICE",
+    "SecurityId": "HDFCBANK",
+    "AssetId": "HDFCBANK",
+    "Symbol": "HDFCBANK",
+    "Quantity": "",
+    "FlowDate": "2023-04-01T00:00:00.000Z",
+    "CashFlow": -50000,
+    "FlowType": "BUY"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "ALICE",
+    "SecurityId": "HDFCBANK",
+    "AssetId": "HDFCBANK",
+    "Symbol": "HDFCBANK",
+    "Quantity": "",
+    "FlowDate": "2024-05-01T00:00:00.000Z",
+    "CashFlow": 24000,
+    "FlowType": "SELL"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "",
+    "SecurityId": "GOOGL",
+    "AssetId": "ALPHABET",
+    "Symbol": "GOOGL",
+    "Quantity": 3950,
+    "FlowDate": "",
+    "CashFlow": "",
+    "FlowType": "CURRENT_VALUE"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "",
+    "SecurityId": "AAPL",
+    "AssetId": "AAPL",
+    "Symbol": "AAPL",
+    "Quantity": 120,
+    "FlowDate": "",
+    "CashFlow": "",
+    "FlowType": "CURRENT_VALUE"
+  },
+  {
+    "Portfolio": "US",
+    "OwnerId": "",
+    "SecurityId": "HDFCBANK",
+    "AssetId": "HDFCBANK",
+    "Symbol": "HDFCBANK",
+    "Quantity": 300,
+    "FlowDate": "",
+    "CashFlow": "",
+    "FlowType": "CURRENT_VALUE"
+  }
+]

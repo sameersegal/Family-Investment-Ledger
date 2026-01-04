@@ -1,0 +1,86 @@
+[
+    {
+        "EntityId": "ALICE",
+        "EntityType": "OWNER",
+        "Name": "Alice Johnson",
+        "OwnerId": "",
+        "BrokerId": "",
+        "Country": "",
+        "Currency": "",
+        "AccountKind": "",
+        "IsForeignAccount": "",
+        "FEMACategoryNotes": ""
+    },
+    {
+        "EntityId": "BOB",
+        "EntityType": "OWNER",
+        "Name": "Bob Smith",
+        "OwnerId": "",
+        "BrokerId": "",
+        "Country": "",
+        "Currency": "",
+        "AccountKind": "",
+        "IsForeignAccount": "",
+        "FEMACategoryNotes": ""
+    },
+    {
+        "EntityId": "BROKER1",
+        "EntityType": "BROKER",
+        "Name": "Test Brokerage Inc",
+        "OwnerId": "",
+        "BrokerId": "",
+        "Country": "USA",
+        "Currency": "USD",
+        "AccountKind": "",
+        "IsForeignAccount": "",
+        "FEMACategoryNotes": ""
+    },
+    {
+        "EntityId": "BROKER2",
+        "EntityType": "BROKER",
+        "Name": "Global Trading Ltd",
+        "OwnerId": "",
+        "BrokerId": "",
+        "Country": "SGP",
+        "Currency": "USD",
+        "AccountKind": "",
+        "IsForeignAccount": "",
+        "FEMACategoryNotes": ""
+    },
+    {
+        "EntityId": "ACCT001",
+        "EntityType": "ACCOUNT",
+        "Name": "Alice US Account",
+        "OwnerId": "ALICE",
+        "BrokerId": "BROKER1",
+        "Country": "USA",
+        "Currency": "USD",
+        "AccountKind": "TRADING",
+        "IsForeignAccount": "TRUE",
+        "FEMACategoryNotes": "Foreign trading account"
+    },
+    {
+        "EntityId": "ACCT002",
+        "EntityType": "ACCOUNT",
+        "Name": "Bob Trading Account",
+        "OwnerId": "BOB",
+        "BrokerId": "BROKER2",
+        "Country": "SGP",
+        "Currency": "USD",
+        "AccountKind": "TRADING",
+        "IsForeignAccount": "TRUE",
+        "FEMACategoryNotes": "Foreign trading account"
+    },
+    {
+        "EntityId": "ACCT003",
+        "EntityType": "ACCOUNT",
+        "Name": "Alice India Account",
+        "OwnerId": "ALICE",
+        "BrokerId": "BROKER2",
+        "Country": "IND",
+        "Currency": "INR",
+        "AccountKind": "TRADING",
+        "IsForeignAccount": "FALSE",
+        "FEMACategoryNotes": "Domestic account"
+    }
+]

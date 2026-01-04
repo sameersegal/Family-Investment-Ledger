@@ -1,10 +1,16 @@
 /**** Configuration ****/
 
 /**
- * Set to true for local testing (reads/writes JSON files in data/ folder)
+ * Set to true for local testing (reads/writes JSON files in data folder)
  * Set to false for production (uses Google Sheets)
  */
 var IS_LOCAL = false;
+
+/**
+ * Data folder path for local testing (relative to __dirname or absolute)
+ * Set by test-local.js before running
+ */
+var DATA_FOLDER = typeof __dirname !== 'undefined' ? require('path').join(__dirname, 'data') : 'data';
 
 /**** Helpers ****/
 
@@ -148,7 +154,7 @@ function readTableLocal_(name) {
     if (typeof require !== 'undefined') {
         const fs = require('fs');
         const path = require('path');
-        const filePath = path.join(__dirname, 'data', name + '.json');
+        const filePath = path.join(DATA_FOLDER, name + '.json');
 
         if (!fs.existsSync(filePath)) {
             console.warn(`Local file not found: ${filePath}, returning empty array`);
@@ -173,14 +179,13 @@ function writeTableLocal_(name, rows) {
     if (typeof require !== 'undefined') {
         const fs = require('fs');
         const path = require('path');
-        const dataDir = path.join(__dirname, 'data');
 
         // Ensure data directory exists
-        if (!fs.existsSync(dataDir)) {
-            fs.mkdirSync(dataDir, { recursive: true });
+        if (!fs.existsSync(DATA_FOLDER)) {
+            fs.mkdirSync(DATA_FOLDER, { recursive: true });
         }
 
-        const filePath = path.join(dataDir, name + '.json');
+        const filePath = path.join(DATA_FOLDER, name + '.json');
         fs.writeFileSync(filePath, JSON.stringify(rows, null, 2), 'utf8');
         console.log(`Written ${rows.length} rows to ${filePath}`);
     } else {
@@ -194,4 +199,20 @@ function writeTableLocal_(name, rows) {
  */
 function setLocalMode(value) {
     IS_LOCAL = value;
+}
+
+/**
+ * Parse tax rate from Config (handles "12.5%", "15%", "SLAB")
+ * @param {string} rateStr - Tax rate string from Config
+ * @param {number} slabRate - Rate to use when "SLAB" (defaults to 30%)
+ * @returns {number} Decimal tax rate (e.g., 0.125 for 12.5%)
+ */
+function parseTaxRate(rateStr, slabRate) {
+    slabRate = slabRate || 0.30; // Default 30% slab
+    if (!rateStr) return 0;
+    if (rateStr === "SLAB") return slabRate;
+    if (typeof rateStr === "string" && rateStr.endsWith("%")) {
+        return parseFloat(rateStr.replace("%", "")) / 100;
+    }
+    return parseFloat(rateStr) || 0;
 }

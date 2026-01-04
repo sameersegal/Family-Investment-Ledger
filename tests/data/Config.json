@@ -1,0 +1,52 @@
+[
+    {
+        "AssetClass": "IND_EQUITY",
+        "HoldingPeriod_ST_Days": 0,
+        "HoldingPeriod_LT_Days": 365,
+        "STCG_Tax_Rate": "15%",
+        "LTCG_Tax_Rate": "10%",
+        "LTCG_Exemption_INR": 100000,
+        "Indexation_Allowed": false,
+        "Tax_Regime_Notes": "Listed equity STT paid"
+    },
+    {
+        "AssetClass": "FOREIGN_EQUITY",
+        "HoldingPeriod_ST_Days": 0,
+        "HoldingPeriod_LT_Days": 730,
+        "STCG_Tax_Rate": "SLAB",
+        "LTCG_Tax_Rate": "12.5%",
+        "LTCG_Exemption_INR": 0,
+        "Indexation_Allowed": false,
+        "Tax_Regime_Notes": "No indexation post 2023"
+    },
+    {
+        "AssetClass": "DEBT_FUND",
+        "HoldingPeriod_ST_Days": 0,
+        "HoldingPeriod_LT_Days": 1095,
+        "STCG_Tax_Rate": "SLAB",
+        "LTCG_Tax_Rate": "SLAB",
+        "LTCG_Exemption_INR": 0,
+        "Indexation_Allowed": false,
+        "Tax_Regime_Notes": "All gains taxed at slab"
+    },
+    {
+        "AssetClass": "LISTED_BOND",
+        "HoldingPeriod_ST_Days": 0,
+        "HoldingPeriod_LT_Days": 1095,
+        "STCG_Tax_Rate": "SLAB",
+        "LTCG_Tax_Rate": "SLAB",
+        "LTCG_Exemption_INR": 0,
+        "Indexation_Allowed": false,
+        "Tax_Regime_Notes": "Includes corporate bonds"
+    },
+    {
+        "AssetClass": "CASH_EQUIVALENT",
+        "HoldingPeriod_ST_Days": 0,
+        "HoldingPeriod_LT_Days": 0,
+        "STCG_Tax_Rate": "SLAB",
+        "LTCG_Tax_Rate": "SLAB",
+        "LTCG_Exemption_INR": 0,
+        "Indexation_Allowed": false,
+        "Tax_Regime_Notes": "Interest taxed as income"
+    }
+]

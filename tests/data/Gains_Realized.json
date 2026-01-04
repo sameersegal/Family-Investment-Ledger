@@ -1,0 +1,47 @@
+[
+  {
+    "OwnerId": "ALICE",
+    "SecurityId": "AAPL",
+    "LotId": "LOT_3",
+    "BuyDate": "2022-01-15",
+    "SellDate": "2022-06-10",
+    "Quantity": 30,
+    "CostINR": 112500,
+    "ProceedsINR": 140400,
+    "GainINR": 27900,
+    "HoldingDays": 146,
+    "GainType": "STCG",
+    "AssetClass": "FOREIGN_EQUITY",
+    "FinancialYear": "2022-2023"
+  },
+  {
+    "OwnerId": "ALICE",
+    "SecurityId": "HDFCBANK",
+    "LotId": "LOT_6",
+    "BuyDate": "2023-04-01",
+    "SellDate": "2024-05-01",
+    "Quantity": 200,
+    "CostINR": 20000,
+    "ProceedsINR": 24000,
+    "GainINR": 4000,
+    "HoldingDays": 396,
+    "GainType": "LTCG",
+    "AssetClass": "IND_EQUITY",
+    "FinancialYear": "2024-2025"
+  },
+  {
+    "OwnerId": "BOB",
+    "SecurityId": "GOOG",
+    "LotId": "LOT_2",
+    "BuyDate": "2014-01-10",
+    "SellDate": "2024-08-01",
+    "Quantity": 50,
+    "CostINR": 43400,
+    "ProceedsINR": 726250,
+    "GainINR": 682850,
+    "HoldingDays": 3856,
+    "GainType": "LTCG",
+    "AssetClass": "FOREIGN_EQUITY",
+    "FinancialYear": "2024-2025"
+  }
+]

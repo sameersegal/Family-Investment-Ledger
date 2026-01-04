@@ -1,0 +1,42 @@
+[
+    {
+        "SecurityId": "AAPL",
+        "Ticker": "AAPL",
+        "AssetId": "AAPL",
+        "Exchange": "NASDAQ",
+        "Country": "USA",
+        "AssetClass": "FOREIGN_EQUITY",
+        "TradingCurrency": "USD",
+        "Name": "Apple Inc"
+    },
+    {
+        "SecurityId": "GOOG",
+        "Ticker": "GOOG",
+        "AssetId": "ALPHABET",
+        "Exchange": "NASDAQ",
+        "Country": "USA",
+        "AssetClass": "FOREIGN_EQUITY",
+        "TradingCurrency": "USD",
+        "Name": "Alphabet Inc Class C"
+    },
+    {
+        "SecurityId": "GOOGL",
+        "Ticker": "GOOGL",
+        "AssetId": "ALPHABET",
+        "Exchange": "NASDAQ",
+        "Country": "USA",
+        "AssetClass": "FOREIGN_EQUITY",
+        "TradingCurrency": "USD",
+        "Name": "Alphabet Inc Class A"
+    },
+    {
+        "SecurityId": "HDFCBANK",
+        "Ticker": "HDFCBANK",
+        "AssetId": "HDFCBANK",
+        "Exchange": "NSE",
+        "Country": "IND",
+        "AssetClass": "IND_EQUITY",
+        "TradingCurrency": "INR",
+        "Name": "HDFC Bank Ltd"
+    }
+]
