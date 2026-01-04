@@ -39,7 +39,7 @@ function rebuildLots() {
     Data: a
   }));
 
-  const order = { BUY: 1, SPLIT: 2, SELL: 3, GIFT: 4, TRANSFER: 5 };
+  const order = { BUY: 1, SPLIT: 2, MERGER: 3, SELL: 4, GIFT: 5, TRANSFER: 6 };
   events.sort((a, b) => a.Date - b.Date || order[a.Type] - order[b.Type]);
 
   events.forEach(e => {
@@ -68,43 +68,55 @@ function rebuildLots() {
       });
     }
 
-    // CLASS_REORG (Alphabet 2014: create GOOG from GOOGL)
+    // CLASS_REORG (e.g., Alphabet 2014: create GOOG from GOOGL)
+    // Creates new lots in the target security, splitting cost based on ratio
     if (e.Type === "CLASS_REORG") {
-      const fromSec = d.SecurityId;          // GOOGL
-      const assetId = secs[fromSec].AssetId;
+      const fromSec = d.SecurityId;
+      const toSec = d.SecurityToId;
+      const fromAssetId = secs[fromSec].AssetId;
+      const toAssetId = secs[toSec].AssetId;
 
-      // Find all open GOOGL lots for this asset
+      // Ratio determines how shares and cost are distributed
+      // e.g., 1:1 means for each original share, you get 1 new share
+      const numerator = Number(d.SplitNumerator) || 1;
+      const denominator = Number(d.SplitDenominator) || 1;
+      const qtyRatio = numerator / denominator;
+      // Cost is split proportionally: new shares get ratio/(1+ratio) of cost
+      const costRatioNew = qtyRatio / (1 + qtyRatio);
+      const costRatioOriginal = 1 - costRatioNew;
+
+      // Find all open lots for the source security
       const sourceLots = lots.filter(l =>
-        l.AssetId === assetId &&
+        l.AssetId === fromAssetId &&
         l.SecurityId === fromSec &&
         l.OpenQty > 0
       );
 
       sourceLots.forEach(lot => {
-        // Split cost 50/50 (total cost unchanged)
-        const newCostNative = lot.CostNative * 0.5;
-        const newCostINR = lot.CostINR * 0.5;
+        const newQty = lot.OpenQty * qtyRatio;
+        const newCostNative = lot.CostNative * costRatioNew;
+        const newCostINR = lot.CostINR * costRatioNew;
 
-        // Create GOOG lot with same quantity
+        // Create new lot in target security
         lots.push({
           LotId: "LOT_" + lotSeq++,
           OwnerId: lot.OwnerId,
-          SecurityId: "GOOG",
-          AssetId: assetId,
+          SecurityId: toSec,
+          AssetId: toAssetId,
           BuyDate: lot.BuyDate,
-          OpenQty: lot.OpenQty,
+          OpenQty: newQty,
           CostNative: newCostNative,
-          CostPriceNative: lot.CostPriceNative * 0.5,
+          CostPriceNative: newQty > 0 ? newCostNative / newQty : 0,
           CostINR: newCostINR,
           BuyFXRate: lot.BuyFXRate,
           BrokerId: lot.BrokerId,
           AccountId: lot.AccountId
         });
 
-        // Reduce original GOOGL lot cost by half
-        lot.CostNative = newCostNative;
-        lot.CostINR = newCostINR;
-        lot.CostPriceNative *= 0.5;
+        // Reduce original lot cost proportionally
+        lot.CostNative *= costRatioOriginal;
+        lot.CostINR *= costRatioOriginal;
+        lot.CostPriceNative = lot.OpenQty > 0 ? lot.CostNative / lot.OpenQty : 0;
       });
     }
 
@@ -165,6 +177,26 @@ function rebuildLots() {
         if (l.SecurityId === d.SecurityId && l.OpenQty > 0) {
           l.OpenQty *= factor;
           l.CostPriceNative /= factor; // per-share price adjusts
+        }
+      });
+    }
+
+    // MERGER (security conversion: e.g., WORK -> CRM)
+    // Converts shares from one security to another with a ratio, preserving cost basis
+    if (e.Type === "MERGER") {
+      const ratio = Number(d.SplitNumerator) / Number(d.SplitDenominator);
+      const fromSec = d.SecurityId;
+      const toSec = d.SecurityToId;
+      const toAssetId = secs[toSec].AssetId;
+
+      lots.forEach(l => {
+        if (l.SecurityId === fromSec && l.OpenQty > 0) {
+          // Convert to new security, preserving total cost basis
+          l.SecurityId = toSec;
+          l.AssetId = toAssetId;
+          l.OpenQty *= ratio;
+          l.CostPriceNative /= ratio; // per-share cost adjusts inversely
+          // CostNative and CostINR stay the same (total cost preserved)
         }
       });
     }
