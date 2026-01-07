@@ -956,7 +956,7 @@ function buildSensitivityMeta_(analysis) {
   const taxRates = [...new Set(analysis.map(a => a._taxRate))].sort((a, b) => a - b);
 
   const meta = [
-    `DATA: Family portfolio lots for tax-efficient cash raising analysis.`,
+    `DATA: Family portfolio lots for tax-efficient cash raising analysis. Tax computation needs to be done in FIFO manner. Lots listed below are in FIFO order. We cannot pick and choose the lots to sell.`,
     `DATE: ${today}`,
     `OWNERS: ${owners.join(", ")}`,
     `TICKERS: ${tickers.join(", ")}`,
