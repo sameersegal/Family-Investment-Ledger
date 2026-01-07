@@ -39,7 +39,7 @@ function rebuildLots() {
     Data: a
   }));
 
-  const order = { BUY: 1, SPLIT: 2, MERGER: 3, SELL: 4, GIFT: 5, TRANSFER: 6 };
+  const order = { BUY: 1, SPLIT: 2, BONUS: 2, MERGER: 3, SELL: 4, GIFT: 5, TRANSFER: 6 };
   events.sort((a, b) => a.Date - b.Date || order[a.Type] - order[b.Type]);
 
   events.forEach(e => {
@@ -178,6 +178,46 @@ function rebuildLots() {
           l.OpenQty *= factor;
           l.CostPriceNative /= factor; // per-share price adjusts
         }
+      });
+    }
+
+    // BONUS (new shares with zero cost basis for Indian tax purposes)
+    // SplitNumerator/SplitDenominator = total shares after / shares before
+    // e.g., 2:1 means 1:1 bonus (1 bonus share for every 1 held, doubling total)
+    // Bonus shares are treated as new lots with:
+    //   - Cost basis = 0 (for tax purposes)
+    //   - Holding period starts from bonus issue date (ActionDate)
+    if (e.Type === "BONUS") {
+      const factor = Number(d.SplitNumerator) / Number(d.SplitDenominator);
+      const bonusRatio = factor - 1; // e.g., 2:1 means 1 bonus share per 1 held
+      const assetId = secs[d.SecurityId].AssetId;
+
+      // Collect lots to process (snapshot before modification)
+      const lotsToProcess = lots.filter(l =>
+        l.SecurityId === d.SecurityId && l.OpenQty > 0
+      );
+
+      lotsToProcess.forEach(l => {
+        const bonusQty = l.OpenQty * bonusRatio;
+
+        if (bonusQty > 0) {
+          // Create new lot for bonus shares with zero cost basis
+          lots.push({
+            LotId: "LOT_" + lotSeq++,
+            OwnerId: l.OwnerId,
+            SecurityId: l.SecurityId,
+            AssetId: assetId,
+            BuyDate: d.ActionDate,           // Holding period starts from bonus date
+            OpenQty: bonusQty,
+            CostNative: 0,                   // Zero cost for bonus shares
+            CostPriceNative: 0,              // Zero cost per share
+            CostINR: 0,                      // Zero cost in INR
+            BuyFXRate: l.BuyFXRate ?? 1,     // Preserve FX rate context
+            BrokerId: l.BrokerId,
+            AccountId: l.AccountId
+          });
+        }
+        // Original lot cost basis remains unchanged (unlike SPLIT)
       });
     }
 
@@ -326,7 +366,7 @@ function rebuildXIRRCashflows() {
     const sec = secs[t.SecurityId];
     if (!sec) return;
 
-    const portfolio = (sec.Country === "India") ? "India" : "US";
+    const portfolio = (sec.Country === "INDIA") ? "India" : "US";
     const amt = Number(t.Quantity) * Number(t.Price);
     const cashflow = (t.Side === "BUY") ? -amt : amt;
 
@@ -351,7 +391,7 @@ function rebuildXIRRCashflows() {
     const sec = secs[repSecId];
     if (!sec) return;
 
-    const portfolio = (sec.Country === "India") ? "India" : "US";
+    const portfolio = (sec.Country === "INDIA") ? "India" : "US";
 
     rows.push({
       Portfolio: portfolio,
@@ -989,7 +1029,7 @@ function rebuildAllDerived() {
   computeCashBalances();
   computeRBI180DayExposure();
 
-  buildPortfolioSheetFromLedger_("IND Portfolio", "India", "India");
+  buildPortfolioSheetFromLedger_("IND Portfolio", "India", "INDIA");
   buildPortfolioSheetFromLedger_("US Portfolio", "US", "USA");
   buildEquityByAccountQC();
   buildSensitivityData();

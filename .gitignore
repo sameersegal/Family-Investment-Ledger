@@ -9,6 +9,11 @@
 
 credentials.json
 token.json
+llm-config.json
+old_trades.csv
 
 # JS
 node_modules
+
+migration/output/**
+migration/tests/**
