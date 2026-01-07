@@ -232,10 +232,12 @@ function rebuildLots() {
       lots.forEach(l => {
         if (l.SecurityId === fromSec && l.OpenQty > 0) {
           // Convert to new security, preserving total cost basis
+          // Floor the quantity since fractional shares are paid in cash
+          const newQty = Math.floor(l.OpenQty * ratio);
           l.SecurityId = toSec;
           l.AssetId = toAssetId;
-          l.OpenQty *= ratio;
-          l.CostPriceNative /= ratio; // per-share cost adjusts inversely
+          l.CostPriceNative = l.CostNative / newQty; // per-share cost based on new quantity
+          l.OpenQty = newQty;
           // CostNative and CostINR stay the same (total cost preserved)
         }
       });
