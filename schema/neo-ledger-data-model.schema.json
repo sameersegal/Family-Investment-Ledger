@@ -1124,6 +1124,8 @@
                 "type": {
                     "type": "string",
                     "enum": [
+                        "buy",
+                        "sell",
                         "dividend",
                         "interest",
                         "fee",
