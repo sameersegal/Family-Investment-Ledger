@@ -30,6 +30,8 @@ A Google Apps Script-based investment portfolio ledger that tracks securities, c
 
 - **RBI 180-Day Compliance**: Tracks foreign income aging for regulatory compliance
 
+- **Sensitivity Analysis**: Produces FIFO-ordered lot data and summary tables for tax-efficient cash-raising analysis
+
 ### Portfolio Views
 
 - India Portfolio & US Portfolio summary sheets
@@ -41,8 +43,8 @@ A Google Apps Script-based investment portfolio ledger that tracks securities, c
 neo-ledger/
 ├── Code.js              # Main business logic
 ├── Helpers.js           # Utility functions & data access layer
-├── Original.js          # Legacy/reference code
 ├── csv-to-json.js       # Data conversion utility
+├── download-sheets.js   # Pull Google Sheets data into local JSON files
 ├── test-local.js        # Local test runner (Node.js)
 ├── appsscript.json      # Google Apps Script manifest
 ├── data/                # Real data folder (gitignored)
@@ -84,6 +86,8 @@ neo-ledger/
 | **XIRR_Cashflows** | Cashflows for XIRR calculation |
 | **RBI_180_Ageing** | Foreign income aging buckets |
 | **QC_Equity_By_Account** | Position reconciliation view |
+| **Sensitivity_Data** | FIFO-ordered lot data for tax-efficient liquidation analysis |
+| **Sensitivity_Summary** | Position-level sensitivity summary by owner and ticker |
 
 ## Usage
 
@@ -120,9 +124,11 @@ node test-local.js --data=path/to/data
 
 The test data includes:
 - Fake owners (ALICE, BOB) and brokers (BROKER1, BROKER2)
-- Sample securities (TEST_TECH, TEST_BANK, TEST_IND, TEST_FUND)
-- Example trades with buys, sells, and a stock split
+- Sample securities (AAPL, GOOG, GOOGL, HDFCBANK)
+- Example trades with buys, sells, splits, and an Alphabet class reorganization
 - Assertions to validate the test results
+
+Running `node test-local.js --test` regenerates derived outputs inside `tests/data/`.
 
 ### Using clasp CLI
 
@@ -189,6 +195,8 @@ Opens the Apps Script editor in your default browser.
 | `buildTaxSummaryByFY()` | Aggregate tax summary by financial year |
 | `computeCashBalances()` | Compute cash balances by account |
 | `computeRBI180DayExposure()` | Track foreign income aging |
+| `buildEquityByAccountQC()` | Build open quantity QC by owner/account/broker/security |
+| `buildSensitivityData()` | Build sensitivity analysis data and summary outputs |
 | `rebuildAllDerived()` | Run all computations in sequence |
 
 ## Configuration
@@ -205,3 +213,8 @@ Tax rules are configured in the `Config` table with fields:
 The `IS_LOCAL` flag in `Helpers.js` controls the execution mode:
 - `false` (default): Uses Google Sheets APIs
 - `true`: Uses local JSON files in `data/` folder
+
+## Notes
+
+- `Cash_Balances` is derived from explicit `CashMovements` rows plus account metadata in `Entities`; trade rows do not automatically create cash entries.
+- In local mode, `Sensitivity_Data` is written as structured JSON with a `meta` block and FIFO-ordered lots. The exported lot rows include `BuyDate` to preserve liquidation order context.

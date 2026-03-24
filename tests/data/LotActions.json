@@ -14,6 +14,9 @@
         "ActionDate": "2014-04-03",
         "ActionType": "CLASS_REORG",
         "SecurityId": "GOOGL",
+        "SecurityToId": "GOOG",
+        "SplitNumerator": 1,
+        "SplitDenominator": 1,
         "Notes": "Alphabet class reorganization - GOOGL holders receive 1 GOOG share per GOOGL share"
     },
     {

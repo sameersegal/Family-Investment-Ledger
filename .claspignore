@@ -27,3 +27,4 @@ credentials.json
 
 # Migration
 migration/**
+tests/**

@@ -1,10 +1,11 @@
 [
   {
-    "meta": "DATA: Family portfolio lots for tax-efficient cash raising analysis. | DATE: 2026-01-04 | OWNERS: ALICE, BOB | TICKERS: AAPL, GOOG, GOOGL, HDFCBANK | LOTS: 6 (6 L, 0 S) | TOTAL_COST_INR: 3,256,725 | COLUMNS: OwnerId=owner, Ticker=stock, Qty=shares, CostINR=cost basis, Type=L(long-term)/S(short-term), ToLTCG=days until long-term (blank=already L), ValueINR=current value, GainINR=unrealized gain, TaxINR=estimated tax if sold | RULES: Type L taxed at 10.0%/12.5% (lower). Type S taxed at slab/higher rates. Negative GainINR=loss (TaxINR=0). To minimize tax: sell losses first, then L, then low-gain lots.",
+    "meta": "DATA: Family portfolio lots for tax-efficient cash raising analysis. Tax computation needs to be done in FIFO manner. Lots listed below are in FIFO order. We cannot pick and choose the lots to sell. | DATE: 2026-03-24 | OWNERS: ALICE, BOB | TICKERS: AAPL, GOOG, GOOGL, HDFCBANK | LOTS: 6 (6 L, 0 S) | TOTAL_COST_INR: 3,256,725 | COLUMNS: OwnerId=owner, Ticker=stock, Qty=shares, CostINR=cost basis, Type=L(long-term)/S(short-term), ToLTCG=days until long-term (blank=already L), ValueINR=current value, GainINR=unrealized gain, TaxINR=estimated tax if sold | RULES: Type L taxed at 10.0%/12.5% (lower). Type S taxed at slab/higher rates. Negative GainINR=loss (TaxINR=0). To minimize tax: sell losses first, then L, then low-gain lots.",
     "lots": [
       {
         "OwnerId": "ALICE",
         "Ticker": "AAPL",
+        "BuyDate": "2022-01-15",
         "Qty": 70,
         "CostINR": 262500,
         "Type": "L",
@@ -16,6 +17,7 @@
       {
         "OwnerId": "ALICE",
         "Ticker": "AAPL",
+        "BuyDate": "2022-02-20",
         "Qty": 50,
         "CostINR": 207625,
         "Type": "L",
@@ -27,6 +29,7 @@
       {
         "OwnerId": "ALICE",
         "Ticker": "HDFCBANK",
+        "BuyDate": "2023-04-01",
         "Qty": 300,
         "CostINR": 30000,
         "Type": "L",
@@ -38,6 +41,7 @@
       {
         "OwnerId": "BOB",
         "Ticker": "GOOG",
+        "BuyDate": "2014-01-10",
         "Qty": 950,
         "CostINR": 824600,
         "Type": "L",
@@ -49,6 +53,7 @@
       {
         "OwnerId": "BOB",
         "Ticker": "GOOG",
+        "BuyDate": "2022-03-15",
         "Qty": 2000,
         "CostINR": 1064000,
         "Type": "L",
@@ -60,6 +65,7 @@
       {
         "OwnerId": "BOB",
         "Ticker": "GOOGL",
+        "BuyDate": "2014-01-10",
         "Qty": 1000,
         "CostINR": 868000,
         "Type": "L",

@@ -814,6 +814,7 @@ function buildSensitivityData() {
     return {
       OwnerId: l.OwnerId,
       Ticker: ticker,
+      BuyDate: l.BuyDate,
       Qty: l.OpenQty,
       CostINR: Math.round(l.CostINR),
       Type: gainType === "LTCG" ? "L" : "S",
@@ -825,16 +826,15 @@ function buildSensitivityData() {
       // Internal use for formulas and sorting
       _currency: currency,
       _ticker: ticker,
-      _buyDate: l.BuyDate,
       _taxRate: taxRate
     };
   });
 
-  // Sort by owner, then ticker, then buy date
+  // Sort by owner, then ticker, then buy date (FIFO order)
   analysis.sort((a, b) => {
     if (a.OwnerId !== b.OwnerId) return a.OwnerId.localeCompare(b.OwnerId);
     if (a.Ticker !== b.Ticker) return a.Ticker.localeCompare(b.Ticker);
-    return new Date(a._buyDate) - new Date(b._buyDate);
+    return new Date(a.BuyDate) - new Date(b.BuyDate);
   });
 
   // In local mode, try to use Prices.json for values
@@ -869,7 +869,6 @@ function buildSensitivityData() {
     analysis.forEach(a => {
       delete a._currency;
       delete a._ticker;
-      delete a._buyDate;
       delete a._taxRate;
     });
 
@@ -882,7 +881,7 @@ function buildSensitivityData() {
 
   // Sheets mode: write data and add GOOGLEFINANCE formulas
   const headers = [
-    "OwnerId", "Ticker",
+    "OwnerId", "Ticker", "BuyDate",
     "Qty", "CostINR",
     "Type", "ToLTCG",
     "ValueINR", "GainINR", "TaxINR"
@@ -902,39 +901,40 @@ function buildSensitivityData() {
   if (analysis.length === 0) return;
 
   // Write static data columns starting from row 3
-  const staticHeaders = headers.slice(0, 6);
+  // Headers: OwnerId(A), Ticker(B), BuyDate(C), Qty(D), CostINR(E), Type(F), ToLTCG(G)
+  const staticHeaders = headers.slice(0, 7);
   const staticData = analysis.map(r => staticHeaders.map(h => r[h]));
   sh.getRange(3, 1, staticData.length, staticHeaders.length).setValues(staticData);
 
-  // Add formulas for dynamic columns (7-9)
+  // Add formulas for dynamic columns (8-10)
   // Column indices (1-based): 
-  // B=Ticker, C=Qty, D=CostINR
-  // G=ValueINR, H=GainINR, I=TaxINR
+  // B=Ticker, C=BuyDate, D=Qty, E=CostINR
+  // H=ValueINR, I=GainINR, J=TaxINR
 
   for (let i = 0; i < analysis.length; i++) {
     const row = i + 3; // Data starts at row 3 now
     const currency = analysis[i]._currency;
     const taxRate = analysis[i]._taxRate;
 
-    // ValueINR (G) = Qty * GOOGLEFINANCE(Ticker) * FXRate
+    // ValueINR (H) = Qty * GOOGLEFINANCE(Ticker) * FXRate
     if (currency === "INR") {
-      sh.getRange(row, 7).setFormula(
-        `=IFERROR(ROUND(C${row}*GOOGLEFINANCE(B${row})), "")`
+      sh.getRange(row, 8).setFormula(
+        `=IFERROR(ROUND(D${row}*GOOGLEFINANCE(B${row})), "")`
       );
     } else {
-      sh.getRange(row, 7).setFormula(
-        `=IFERROR(ROUND(C${row}*GOOGLEFINANCE(B${row})*GOOGLEFINANCE("CURRENCY:${currency}INR")), "")`
+      sh.getRange(row, 8).setFormula(
+        `=IFERROR(ROUND(D${row}*GOOGLEFINANCE(B${row})*GOOGLEFINANCE("CURRENCY:${currency}INR")), "")`
       );
     }
 
-    // GainINR (H) = ValueINR - CostINR
-    sh.getRange(row, 8).setFormula(
-      `=IF(G${row}<>"", G${row}-D${row}, "")`
+    // GainINR (I) = ValueINR - CostINR
+    sh.getRange(row, 9).setFormula(
+      `=IF(H${row}<>"", H${row}-E${row}, "")`
     );
 
-    // TaxINR (I) = ROUND(MAX(0, GainINR) * TaxRate)
-    sh.getRange(row, 9).setFormula(
-      `=IF(H${row}<>"", ROUND(MAX(0, H${row})*${taxRate}), "")`
+    // TaxINR (J) = ROUND(MAX(0, GainINR) * TaxRate)
+    sh.getRange(row, 10).setFormula(
+      `=IF(I${row}<>"", ROUND(MAX(0, I${row})*${taxRate}), "")`
     );
   }
 }

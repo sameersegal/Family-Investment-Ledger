@@ -37,7 +37,8 @@ const SHEETS = [
     'Entities',
     'Securities',
     'Trades',
-    'LotActions'
+    'LotActions',
+    'CashMovements'
 ];
 
 // Output folders
