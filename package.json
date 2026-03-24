@@ -1,5 +1,13 @@
 {
+  "scripts": {
+    "generate:types": "node scripts/generate-types.js",
+    "test": "node test-local.js --test && node tests/verify-fixture-outputs.js",
+    "deploy:gas": "npm run generate:types && clasp push"
+  },
   "dependencies": {
     "googleapis": "^169.0.0"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^15.0.4"
   }
 }

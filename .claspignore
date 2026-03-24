@@ -2,6 +2,10 @@
 test-local.js
 csv-to-json.js
 download-sheets.js
+scripts/**
+types/**
+schema/**
+jsconfig.json
 
 # Ignore data folder
 data/**

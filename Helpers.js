@@ -1,5 +1,8 @@
 /**** Configuration ****/
 
+/** @typedef {import('./types/neo-ledger-types').TableName} TableName */
+/** @typedef {import('./types/neo-ledger-types').TableNameMap} TableNameMap */
+
 /**
  * Set to true for local testing (reads/writes JSON files in data folder)
  * Set to false for production (uses Google Sheets)
@@ -66,6 +69,12 @@ function resetSheet(name) {
     return sh;
 }
 
+/**
+ * Read a ledger table by canonical table name.
+ * @template {TableName} T
+ * @param {T} name
+ * @returns {TableNameMap[T]}
+ */
 function readTable(name) {
     if (IS_LOCAL) {
         return readTableLocal_(name);
@@ -76,6 +85,12 @@ function readTable(name) {
     return values.map(r => Object.fromEntries(headers.map((h, i) => [h, r[i]])));
 }
 
+/**
+ * Write a ledger table by canonical table name.
+ * @template {TableName} T
+ * @param {T} name
+ * @param {TableNameMap[T]} rows
+ */
 function writeTable(name, rows) {
     if (IS_LOCAL) {
         writeTableLocal_(name, rows);

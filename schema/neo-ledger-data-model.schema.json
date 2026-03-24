@@ -1,0 +1,1359 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://sameersegal.github.io/neo-ledger/schema/neo-ledger-data-model.schema.json",
+    "title": "Neo Ledger Data Model Registry",
+    "description": "Reusable JSON Schema definitions for Neo Ledger input tables, derived tables, and the bank-statement parser adapter contract. Validate individual files with fragment refs such as #/$defs/TradesFile or #/$defs/CashMovementsFile.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {},
+    "$defs": {
+        "Identifier": {
+            "type": "string",
+            "minLength": 1
+        },
+        "IsoDate": {
+            "type": "string",
+            "format": "date"
+        },
+        "IsoDateTimeOrBlank": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                {
+                    "type": "string",
+                    "const": ""
+                }
+            ]
+        },
+        "StringOrBlank": {
+            "type": "string"
+        },
+        "BooleanLike": {
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "string",
+                    "enum": [
+                        "TRUE",
+                        "FALSE",
+                        ""
+                    ]
+                }
+            ]
+        },
+        "NumberOrBlank": {
+            "oneOf": [
+                {
+                    "type": "number"
+                },
+                {
+                    "type": "string",
+                    "const": ""
+                }
+            ]
+        },
+        "TaxRate": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "pattern": "^(?:\\d+(?:\\.\\d+)?%|SLAB)$"
+                },
+                {
+                    "type": "number",
+                    "minimum": 0
+                }
+            ]
+        },
+        "FinancialYear": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{4}$"
+        },
+        "TradeSide": {
+            "type": "string",
+            "enum": [
+                "BUY",
+                "SELL"
+            ]
+        },
+        "LotActionType": {
+            "type": "string",
+            "enum": [
+                "SPLIT",
+                "BONUS",
+                "MERGER",
+                "CLASS_REORG",
+                "GIFT",
+                "TRANSFER"
+            ]
+        },
+        "CashCategory": {
+            "type": "string",
+            "enum": [
+                "DIVIDEND",
+                "INTEREST",
+                "TAX",
+                "FEE",
+                "DEPOSIT",
+                "WITHDRAWAL",
+                "FOREX",
+                "OTHER",
+                "BUY_SETTLEMENT",
+                "SELL_PROCEEDS",
+                "SALE_PROCEEDS",
+                "REINVESTMENT",
+                "REPATRIATION"
+            ]
+        },
+        "ConfigRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "AssetClass",
+                "HoldingPeriod_ST_Days",
+                "HoldingPeriod_LT_Days",
+                "STCG_Tax_Rate",
+                "LTCG_Tax_Rate",
+                "LTCG_Exemption_INR",
+                "Indexation_Allowed",
+                "Tax_Regime_Notes"
+            ],
+            "properties": {
+                "AssetClass": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "HoldingPeriod_ST_Days": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "HoldingPeriod_LT_Days": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "STCG_Tax_Rate": {
+                    "$ref": "#/$defs/TaxRate"
+                },
+                "LTCG_Tax_Rate": {
+                    "$ref": "#/$defs/TaxRate"
+                },
+                "LTCG_Exemption_INR": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "Indexation_Allowed": {
+                    "$ref": "#/$defs/BooleanLike"
+                },
+                "Tax_Regime_Notes": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "EntityRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "EntityId",
+                "EntityType",
+                "Name",
+                "OwnerId",
+                "BrokerId",
+                "Country",
+                "Currency",
+                "AccountKind",
+                "IsForeignAccount",
+                "FEMACategoryNotes"
+            ],
+            "properties": {
+                "EntityId": {
+                    "type": "string"
+                },
+                "EntityType": {
+                    "type": "string",
+                    "enum": [
+                        "OWNER",
+                        "BROKER",
+                        "ACCOUNT",
+                        ""
+                    ]
+                },
+                "Name": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "OwnerId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "BrokerId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "Country": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "Currency": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "AccountKind": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "IsForeignAccount": {
+                    "$ref": "#/$defs/BooleanLike"
+                },
+                "FEMACategoryNotes": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "SecurityRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "SecurityId",
+                "Ticker",
+                "AssetId",
+                "Exchange",
+                "Country",
+                "AssetClass",
+                "TradingCurrency",
+                "Name"
+            ],
+            "properties": {
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Ticker": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AssetId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Exchange": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "Country": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "AssetClass": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "TradingCurrency": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Name": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "TradeRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "TradeId",
+                "TradeDate",
+                "OwnerId",
+                "BrokerId",
+                "AccountId",
+                "SecurityId",
+                "Side",
+                "Quantity",
+                "Price",
+                "Fees",
+                "FXRateToINR",
+                "Notes",
+                "SourceRef"
+            ],
+            "properties": {
+                "TradeId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "TradeDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BrokerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Side": {
+                    "$ref": "#/$defs/TradeSide"
+                },
+                "Quantity": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "Price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "Fees": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "FXRateToINR": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "Notes": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "SourceRef": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "LotActionRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "ActionId",
+                "ActionDate",
+                "ActionType",
+                "OwnerFromId",
+                "OwnerToId",
+                "BrokerFromId",
+                "BrokerToId",
+                "AccountFromId",
+                "AccountToId",
+                "SecurityId",
+                "SecurityToId",
+                "SplitNumerator",
+                "SplitDenominator",
+                "Quantity",
+                "Notes",
+                "SourceRef"
+            ],
+            "properties": {
+                "ActionId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "ActionDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "ActionType": {
+                    "$ref": "#/$defs/LotActionType"
+                },
+                "OwnerFromId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "OwnerToId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "BrokerFromId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "BrokerToId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "AccountFromId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "AccountToId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "SecurityToId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "SplitNumerator": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "SplitDenominator": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "Quantity": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "Notes": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "SourceRef": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "CashMovementRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "CashTxnId",
+                "TxnDate",
+                "OwnerId",
+                "AccountId",
+                "Currency",
+                "Amount",
+                "Category",
+                "LinkedTradeId",
+                "LinkedActionId",
+                "IsForeignIncome",
+                "Notes",
+                "SourceRef"
+            ],
+            "properties": {
+                "CashTxnId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "TxnDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Currency": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Amount": {
+                    "type": "number"
+                },
+                "Category": {
+                    "$ref": "#/$defs/CashCategory"
+                },
+                "LinkedTradeId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "LinkedActionId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "IsForeignIncome": {
+                    "$ref": "#/$defs/BooleanLike"
+                },
+                "Notes": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "SourceRef": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "PriceRow": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+                "SecurityId",
+                "Price"
+            ],
+            "properties": {
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "Currency": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "FXRate": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                }
+            }
+        },
+        "AssertionRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "type",
+                "desc"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "quantity",
+                        "no_negative",
+                        "no_invalid"
+                    ]
+                },
+                "owner": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "security": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "account": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "expected": {
+                    "type": "number"
+                },
+                "desc": {
+                    "$ref": "#/$defs/Identifier"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "type": {
+                                "const": "quantity"
+                            }
+                        }
+                    },
+                    "then": {
+                        "required": [
+                            "owner",
+                            "security",
+                            "account",
+                            "expected"
+                        ]
+                    }
+                }
+            ]
+        },
+        "LotCurrentRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "LotId",
+                "OwnerId",
+                "SecurityId",
+                "AssetId",
+                "BuyDate",
+                "OpenQty",
+                "CostNative",
+                "CostPriceNative",
+                "CostINR",
+                "BuyFXRate",
+                "BrokerId",
+                "AccountId"
+            ],
+            "properties": {
+                "LotId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AssetId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BuyDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "OpenQty": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "CostNative": {
+                    "type": "number"
+                },
+                "CostPriceNative": {
+                    "type": "number"
+                },
+                "CostINR": {
+                    "type": "number"
+                },
+                "BuyFXRate": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "BrokerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountId": {
+                    "$ref": "#/$defs/Identifier"
+                }
+            }
+        },
+        "LotConsumeRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "ConsumeId",
+                "TradeId",
+                "OwnerId",
+                "SecurityId",
+                "AssetId",
+                "LotId",
+                "BuyDate",
+                "SellDate",
+                "Quantity",
+                "CostNative",
+                "CostPriceNative",
+                "CostINR",
+                "CostFXRate",
+                "SalePriceNative",
+                "SaleFXRate",
+                "ProceedsNative",
+                "ProceedsINR"
+            ],
+            "properties": {
+                "ConsumeId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "TradeId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AssetId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "LotId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BuyDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "SellDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "Quantity": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "CostNative": {
+                    "type": "number"
+                },
+                "CostPriceNative": {
+                    "type": "number"
+                },
+                "CostINR": {
+                    "type": "number"
+                },
+                "CostFXRate": {
+                    "oneOf": [
+                        {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                },
+                "SalePriceNative": {
+                    "type": "number"
+                },
+                "SaleFXRate": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "ProceedsNative": {
+                    "type": "number"
+                },
+                "ProceedsINR": {
+                    "type": "number"
+                }
+            }
+        },
+        "GainRealizedRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "OwnerId",
+                "SecurityId",
+                "LotId",
+                "BuyDate",
+                "SellDate",
+                "Quantity",
+                "CostINR",
+                "ProceedsINR",
+                "GainINR",
+                "HoldingDays",
+                "GainType",
+                "AssetClass",
+                "FinancialYear"
+            ],
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "LotId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BuyDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "SellDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "Quantity": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "CostINR": {
+                    "type": "number"
+                },
+                "ProceedsINR": {
+                    "type": "number"
+                },
+                "GainINR": {
+                    "type": "number"
+                },
+                "HoldingDays": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "GainType": {
+                    "type": "string",
+                    "enum": [
+                        "STCG",
+                        "LTCG"
+                    ]
+                },
+                "AssetClass": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "FinancialYear": {
+                    "$ref": "#/$defs/FinancialYear"
+                }
+            }
+        },
+        "TaxSummaryFYRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "OwnerId",
+                "FinancialYear",
+                "AssetClass",
+                "GainType",
+                "GrossGainINR",
+                "ExemptINR",
+                "TaxableINR",
+                "TaxRate"
+            ],
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "FinancialYear": {
+                    "$ref": "#/$defs/FinancialYear"
+                },
+                "AssetClass": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "GainType": {
+                    "type": "string",
+                    "enum": [
+                        "STCG",
+                        "LTCG"
+                    ]
+                },
+                "GrossGainINR": {
+                    "type": "number"
+                },
+                "ExemptINR": {
+                    "type": "number"
+                },
+                "TaxableINR": {
+                    "type": "number"
+                },
+                "TaxRate": {
+                    "$ref": "#/$defs/TaxRate"
+                }
+            }
+        },
+        "CashBalanceRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "OwnerId",
+                "AccountId",
+                "AccountKind",
+                "Currency",
+                "Balance"
+            ],
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountKind": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "Currency": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Balance": {
+                    "type": "number"
+                }
+            }
+        },
+        "XIRRCashflowRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "Portfolio",
+                "OwnerId",
+                "SecurityId",
+                "AssetId",
+                "Symbol",
+                "Quantity",
+                "FlowDate",
+                "CashFlow",
+                "FlowType"
+            ],
+            "properties": {
+                "Portfolio": {
+                    "type": "string",
+                    "enum": [
+                        "India",
+                        "US"
+                    ]
+                },
+                "OwnerId": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AssetId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Symbol": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Quantity": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "FlowDate": {
+                    "$ref": "#/$defs/IsoDateTimeOrBlank"
+                },
+                "CashFlow": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "FlowType": {
+                    "type": "string",
+                    "enum": [
+                        "BUY",
+                        "SELL",
+                        "CURRENT_VALUE"
+                    ]
+                }
+            }
+        },
+        "RBIAgeingRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "OwnerId",
+                "StartDate",
+                "RemainingAmount",
+                "AgeDays",
+                "Status"
+            ],
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "StartDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "RemainingAmount": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "AgeDays": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "Status": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "QCEquityByAccountRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "OwnerId",
+                "AccountId",
+                "BrokerId",
+                "Symbol",
+                "Quantity",
+                "SecurityId"
+            ],
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BrokerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Symbol": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Quantity": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "SecurityId": {
+                    "$ref": "#/$defs/Identifier"
+                }
+            }
+        },
+        "SensitivityLotRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "OwnerId",
+                "Ticker",
+                "BuyDate",
+                "Qty",
+                "CostINR",
+                "Type",
+                "ToLTCG",
+                "ValueINR",
+                "GainINR",
+                "TaxINR"
+            ],
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Ticker": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BuyDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "Qty": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "CostINR": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "Type": {
+                    "type": "string",
+                    "enum": [
+                        "L",
+                        "S"
+                    ]
+                },
+                "ToLTCG": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        {
+                            "type": "string",
+                            "const": ""
+                        }
+                    ]
+                },
+                "ValueINR": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "GainINR": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "TaxINR": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                }
+            }
+        },
+        "SensitivityDataDocument": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "meta",
+                "lots"
+            ],
+            "properties": {
+                "meta": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "lots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/SensitivityLotRow"
+                    }
+                }
+            }
+        },
+        "SensitivitySummaryRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "OwnerId",
+                "Ticker",
+                "TotalQty",
+                "TotalCostINR",
+                "TotalValueINR",
+                "TotalGainINR",
+                "GainPct",
+                "TotalTaxINR",
+                "LotCount",
+                "TypeMix"
+            ],
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "Ticker": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "TotalQty": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "TotalCostINR": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "TotalValueINR": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "TotalGainINR": {
+                    "type": "number"
+                },
+                "GainPct": {
+                    "type": "number"
+                },
+                "TotalTaxINR": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "LotCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "TypeMix": {
+                    "type": "string",
+                    "enum": [
+                        "S",
+                        "L",
+                        "MIX"
+                    ]
+                }
+            }
+        },
+        "ParserPeriod": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "from",
+                "to"
+            ],
+            "properties": {
+                "from": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "to": {
+                    "$ref": "#/$defs/IsoDate"
+                }
+            }
+        },
+        "ParserPositionTransaction": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "date",
+                "type",
+                "ticker",
+                "quantity",
+                "price",
+                "amount",
+                "currency"
+            ],
+            "properties": {
+                "date": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "buy",
+                        "sell"
+                    ]
+                },
+                "ticker": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "quantity": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "price": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "$ref": "#/$defs/Identifier"
+                }
+            }
+        },
+        "ParserCashTransaction": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "date",
+                "type",
+                "description",
+                "amount",
+                "currency"
+            ],
+            "properties": {
+                "date": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "dividend",
+                        "interest",
+                        "fee",
+                        "deposit",
+                        "withdrawal",
+                        "forex",
+                        "tax",
+                        "other"
+                    ]
+                },
+                "description": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "currency": {
+                    "$ref": "#/$defs/Identifier"
+                }
+            }
+        },
+        "ParserStatement": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "broker",
+                "account_id",
+                "period",
+                "position_transactions",
+                "cash_transactions"
+            ],
+            "properties": {
+                "broker": {
+                    "type": "string",
+                    "enum": [
+                        "ibkr",
+                        "schwab"
+                    ]
+                },
+                "account_id": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "period": {
+                    "$ref": "#/$defs/ParserPeriod"
+                },
+                "position_transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/ParserPositionTransaction"
+                    }
+                },
+                "cash_transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/ParserCashTransaction"
+                    }
+                }
+            }
+        },
+        "AdapterConfig": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "sourceId",
+                "parserBroker",
+                "parserAccountId",
+                "ownerId",
+                "brokerId",
+                "accountId",
+                "defaultTradeFee",
+                "defaultCashIsForeignIncome",
+                "securityMap",
+                "currencyToINR"
+            ],
+            "properties": {
+                "sourceId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "parserBroker": {
+                    "type": "string",
+                    "enum": [
+                        "ibkr",
+                        "schwab"
+                    ]
+                },
+                "parserAccountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "ownerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "brokerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "accountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "defaultTradeFee": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "defaultCashIsForeignIncome": {
+                    "type": "boolean"
+                },
+                "securityMap": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/Identifier"
+                    }
+                },
+                "currencyToINR": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                    }
+                }
+            }
+        },
+        "ConfigFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/ConfigRow"
+            }
+        },
+        "EntitiesFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/EntityRow"
+            }
+        },
+        "SecuritiesFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/SecurityRow"
+            }
+        },
+        "TradesFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/TradeRow"
+            }
+        },
+        "LotActionsFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/LotActionRow"
+            }
+        },
+        "CashMovementsFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/CashMovementRow"
+            }
+        },
+        "PricesFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/PriceRow"
+            }
+        },
+        "AssertionsFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/AssertionRow"
+            }
+        },
+        "LotsCurrentFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/LotCurrentRow"
+            }
+        },
+        "LotConsumesFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/LotConsumeRow"
+            }
+        },
+        "GainsRealizedFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/GainRealizedRow"
+            }
+        },
+        "TaxSummaryFYFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/TaxSummaryFYRow"
+            }
+        },
+        "CashBalancesFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/CashBalanceRow"
+            }
+        },
+        "XIRRCashflowsFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/XIRRCashflowRow"
+            }
+        },
+        "RBI180AgeingFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/RBIAgeingRow"
+            }
+        },
+        "QCEquityByAccountFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/QCEquityByAccountRow"
+            }
+        },
+        "SensitivityDataFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/SensitivityDataDocument"
+            },
+            "minItems": 1,
+            "maxItems": 1
+        },
+        "SensitivitySummaryFile": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/SensitivitySummaryRow"
+            }
+        }
+    }
+}

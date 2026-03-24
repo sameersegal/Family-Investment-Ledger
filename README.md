@@ -101,19 +101,26 @@ neo-ledger/
 ### Local Testing (Node.js)
 
 1. Ensure sample data exists in the `data/` folder as JSON files
-2. Run the test:
+2. Generate local declaration files from the JSON Schema registry:
+  ```bash
+  npm run generate:types
+  ```
+3. Run the test:
    ```bash
-   node test-local.js
+  npm test
    ```
-3. Output files will be written to the `data/` folder
+4. Output files will be written to the `data/` folder
 
 #### Using Test Data
 
 The repository includes dummy test data in `tests/data/` for testing without personal data:
 
 ```bash
+# Generate declaration files from the schema registry
+npm run generate:types
+
 # Run with test data (safe to commit results)
-node test-local.js --test
+npm test
 
 # Run with real data (default)
 node test-local.js
@@ -129,6 +136,14 @@ The test data includes:
 - Assertions to validate the test results
 
 Running `node test-local.js --test` regenerates derived outputs inside `tests/data/`.
+
+### Generated Types
+
+The repository includes a JSON Schema registry at `schema/neo-ledger-data-model.schema.json`.
+
+- Run `npm run generate:types` to generate `types/neo-ledger.generated.d.ts`.
+- `Helpers.js` uses the generated type map so `readTable("Trades")`, `readTable("CashMovements")`, and similar calls resolve to table-specific row arrays in the editor.
+- Generated type files and schema files are local-only artifacts and are excluded from Apps Script uploads.
 
 ### Using clasp CLI
 
@@ -158,11 +173,23 @@ The Script ID can be found in your Apps Script project under **Project Settings*
 
 #### Push Local Changes to Google
 
+Before pushing to Apps Script, regenerate types and run the local test flow:
+
 ```bash
+npm run generate:types
+npm test
 clasp push
 ```
 
 Uploads local `.js` and `appsscript.json` files to the Apps Script project.
+
+You can also use the combined helper command:
+
+```bash
+npm run deploy:gas
+```
+
+This regenerates types and then runs `clasp push`.
 
 #### Pull Remote Changes
 

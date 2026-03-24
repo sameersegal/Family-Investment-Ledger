@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "OwnerId": "ALICE",
+    "AccountId": "ACCT001",
+    "AccountKind": "TRADING",
+    "Currency": "USD",
+    "Balance": 950
+  },
+  {
+    "OwnerId": "BOB",
+    "AccountId": "ACCT002",
+    "AccountKind": "TRADING",
+    "Currency": "USD",
+    "Balance": 950
+  },
+  {
+    "OwnerId": "ALICE",
+    "AccountId": "ACCT003",
+    "AccountKind": "TRADING",
+    "Currency": "INR",
+    "Balance": 5000
+  }
+]
