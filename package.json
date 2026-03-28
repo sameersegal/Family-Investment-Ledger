@@ -1,7 +1,7 @@
 {
   "scripts": {
     "generate:types": "node scripts/generate-types.js",
-    "test": "node test-local.js --test && node tests/verify-fixture-outputs.js",
+    "test": "node test-local.js --test && node tests/verify-fixture-outputs.js && node tests/test-api-validation.js",
     "deploy:gas": "npm run generate:types && clasp push"
   },
   "dependencies": {
