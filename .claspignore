@@ -29,6 +29,4 @@ tests
 # Ignore credentials
 credentials.json
 
-# Migration
-migration/**
 tests/**

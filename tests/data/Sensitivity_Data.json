@@ -1,6 +1,6 @@
 [
   {
-    "meta": "DATA: Family portfolio lots for tax-efficient cash raising analysis. Tax computation needs to be done in FIFO manner. Lots listed below are in FIFO order. We cannot pick and choose the lots to sell. | DATE: 2026-03-24 | OWNERS: ALICE, BOB | TICKERS: AAPL, GOOG, GOOGL, HDFCBANK | LOTS: 6 (6 L, 0 S) | TOTAL_COST_INR: 3,256,725 | COLUMNS: OwnerId=owner, Ticker=stock, Qty=shares, CostINR=cost basis, Type=L(long-term)/S(short-term), ToLTCG=days until long-term (blank=already L), ValueINR=current value, GainINR=unrealized gain, TaxINR=estimated tax if sold | RULES: Type L taxed at 10.0%/12.5% (lower). Type S taxed at slab/higher rates. Negative GainINR=loss (TaxINR=0). To minimize tax: sell losses first, then L, then low-gain lots.",
+    "meta": "DATA: Family portfolio lots for tax-efficient cash raising analysis. Tax computation needs to be done in FIFO manner. Lots listed below are in FIFO order. We cannot pick and choose the lots to sell. | DATE: 2026-03-28 | OWNERS: ALICE, BOB | TICKERS: AAPL, GOOG, GOOGL, HDFCBANK | LOTS: 6 (6 L, 0 S) | TOTAL_COST_INR: 3,256,725 | COLUMNS: OwnerId=owner, Ticker=stock, Qty=shares, CostINR=cost basis, Type=L(long-term)/S(short-term), ToLTCG=days until long-term (blank=already L), ValueINR=current value, GainINR=unrealized gain, TaxINR=estimated tax if sold | RULES: Type L taxed at 10.0%/12.5% (lower). Type S taxed at slab/higher rates. Negative GainINR=loss (TaxINR=0). To minimize tax: sell losses first, then L, then low-gain lots.",
     "lots": [
       {
         "OwnerId": "ALICE",
