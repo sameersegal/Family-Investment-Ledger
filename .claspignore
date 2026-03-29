@@ -30,3 +30,9 @@ tests
 credentials.json
 
 tests/**
+
+# Ignore migration files
+migration/**
+
+# Ignore Claude worktrees
+.claude/**
