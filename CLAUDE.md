@@ -71,7 +71,7 @@ Validation pipeline: field types/enums → referential integrity (FK checks agai
 
 ### Claude Code Skill (`/family-ledger`)
 
-The `/family-ledger` skill (`.claude/skills/family-ledger/SKILL.md`) provides a slash command to query and ingest data via the Web API.
+The `/family-ledger` skill (`skills/family-ledger/SKILL.md`) provides a slash command to query and ingest data via the Web API.
 
 **Required env var:** `FAMILY_LEDGER_DEPLOYMENT_ID` — the Google Apps Script deployment ID. Set it before using the skill.
 
