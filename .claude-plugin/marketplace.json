@@ -1,11 +1,15 @@
 {
-    "title": "Family Ledger",
-    "description": "Query and manage a family investment portfolio powered by Neo Ledger. Read securities, entities, config, and schema. Validate and ingest trades, cash movements, and lot actions via a Google Apps Script web API.",
-    "category": "Finance",
-    "tags": ["finance", "portfolio", "investments", "ledger", "google-apps-script"],
-    "author": {
-        "name": "Sameer Segal"
-    },
-    "repository": "https://github.com/sameersegal/Family-Investment-Ledger",
-    "license": "MIT"
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "family-ledger",
+  "owner": {
+    "name": "sameersegal",
+    "url": "https://github.com/sameersegal"
+  },
+  "plugins": [
+    {
+      "name": "family-ledger",
+      "source": ".claude-plugin",
+      "description": "Query and manage a family investment portfolio powered by Neo Ledger"
+    }
+  ]
 }
