@@ -1,8 +1,7 @@
 ---
 name: family-ledger
 description: Query and manage the Neo Ledger family investment portfolio. Use when the user asks about portfolio data, securities, entities, trades, cash movements, config, tax rules, or wants to ingest new transactions.
-allowed-tools: Bash(curl *)
-argument-hint: [config|entities|securities|schema|validate|ingest]
+argument-hint: "[config|entities|securities|schema|validate|ingest]"
 ---
 
 # Neo Ledger API Skill
@@ -39,11 +38,11 @@ Parse the JSON response. If `status` is `"ok"`, format `data` as a readable mark
 
 ### Argument routing
 
-- `/ledger config` or user asks about tax rules, holding periods, asset classes -> call `?action=config`
-- `/ledger entities` or user asks about owners, brokers, accounts -> call `?action=entities`
-- `/ledger securities` or user asks about tickers, stocks, securities -> call `?action=securities`
-- `/ledger schema` or user asks about field definitions, what fields are needed -> call `?action=schema`
-- `/ledger` with no argument -> show available actions as a help summary
+- `/family-ledger config` or user asks about tax rules, holding periods, asset classes -> call `?action=config`
+- `/family-ledger entities` or user asks about owners, brokers, accounts -> call `?action=entities`
+- `/family-ledger securities` or user asks about tickers, stocks, securities -> call `?action=securities`
+- `/family-ledger schema` or user asks about field definitions, what fields are needed -> call `?action=schema`
+- `/family-ledger` with no argument -> show available actions as a help summary
 
 ## Write Endpoints (POST)
 

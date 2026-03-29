@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "family-ledger",
-      "source": ".",
+      "source": "./family-ledger",
       "description": "Query and manage a family investment portfolio powered by Neo Ledger"
     }
   ]

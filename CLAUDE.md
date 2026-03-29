@@ -69,9 +69,9 @@ Test fixtures are committed in `tests/data/` (20 JSON files covering all input a
 
 Validation pipeline: field types/enums → referential integrity (FK checks against Entities, Securities) → duplicate ID check → rebuild safety net.
 
-### Claude Code Skill (`/family-ledger`)
+### Claude Code Plugin (`/family-ledger`)
 
-The `/family-ledger` skill (`skills/family-ledger/SKILL.md`) provides a slash command to query and ingest data via the Web API.
+The `/family-ledger` command (`family-ledger/commands/family-ledger.md`) loads the `family-ledger` skill (`family-ledger/skills/family-ledger/SKILL.md`) to query and ingest data via the Web API.
 
 **Required env var:** `FAMILY_LEDGER_DEPLOYMENT_ID` — the Google Apps Script deployment ID. Set it before using the skill.
 
