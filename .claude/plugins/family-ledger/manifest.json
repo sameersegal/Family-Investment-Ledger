@@ -1,0 +1,15 @@
+{
+    "name": "family-ledger",
+    "version": "1.0.0",
+    "description": "Claude Code plugin for the Neo Ledger family investment portfolio. Query securities, entities, config, and schema. Validate and ingest trades, cash movements, and lot actions via the Google Apps Script web API.",
+    "author": "Sameer Segal",
+    "skills": [
+        "family-ledger"
+    ],
+    "environment": {
+        "FAMILY_LEDGER_DEPLOYMENT_ID": {
+            "description": "Google Apps Script web app deployment ID for the Neo Ledger API",
+            "required": true
+        }
+    }
+}
