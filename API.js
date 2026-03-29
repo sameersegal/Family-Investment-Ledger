@@ -112,7 +112,7 @@ function handleSchema_() {
 /* ─── Field definitions (derived from schema) ─── */
 
 var TRADE_FIELDS_ = {
-    TradeId:    { type: 'identifier' },
+    TradeId:    { type: 'identifier', autoGenerate: true },
     TradeDate:  { type: 'date' },
     OwnerId:    { type: 'identifier' },
     BrokerId:   { type: 'identifier' },
@@ -128,13 +128,13 @@ var TRADE_FIELDS_ = {
 };
 
 var CASH_MOVEMENT_FIELDS_ = {
-    CashTxnId:      { type: 'identifier' },
+    CashTxnId:      { type: 'identifier', autoGenerate: true },
     TxnDate:        { type: 'date' },
     OwnerId:        { type: 'identifier' },
     AccountId:      { type: 'identifier' },
     Currency:       { type: 'identifier' },
     Amount:         { type: 'number' },
-    Category:       { type: 'enum', values: ['DIVIDEND', 'INTEREST', 'TAX', 'FEE', 'DEPOSIT', 'WITHDRAWAL', 'FOREX', 'OTHER', 'BUY_SETTLEMENT', 'SELL_PROCEEDS', 'SALE_PROCEEDS', 'REINVESTMENT', 'REPATRIATION'] },
+    Category:       { type: 'enum', values: ['DIVIDEND', 'INTEREST', 'TAX', 'FEE', 'DEPOSIT', 'WITHDRAWAL', 'FOREX', 'OTHER', 'BUY_SETTLEMENT', 'SELL_PROCEEDS', 'SALE_PROCEEDS', 'REINVESTMENT', 'REPATRIATION', 'OPENING_BALANCE'] },
     LinkedTradeId:  { type: 'string' },
     LinkedActionId: { type: 'string' },
     IsForeignIncome: { type: 'boolean' },
@@ -143,7 +143,7 @@ var CASH_MOVEMENT_FIELDS_ = {
 };
 
 var LOT_ACTION_FIELDS_ = {
-    ActionId:        { type: 'identifier' },
+    ActionId:        { type: 'identifier', autoGenerate: true },
     ActionDate:      { type: 'date' },
     ActionType:      { type: 'enum', values: ['SPLIT', 'BONUS', 'MERGER', 'CLASS_REORG', 'GIFT', 'TRANSFER'] },
     OwnerFromId:     { type: 'string' },
@@ -166,6 +166,84 @@ var TABLE_DEFS_ = {
     cashMovements: { sheetName: 'CashMovements', fields: CASH_MOVEMENT_FIELDS_, idField: 'CashTxnId' },
     lotActions:    { sheetName: 'LotActions',     fields: LOT_ACTION_FIELDS_,    idField: 'ActionId' }
 };
+
+/* ─── Auto-increment ID generation ─── */
+
+var ID_PREFIXES_ = { trades: 'T', cashMovements: 'CM', lotActions: 'L' };
+
+/**
+ * For each table in the payload, fills in missing IDs with auto-incremented values.
+ * Mutates the payload in-place. Returns a map of generated IDs per table.
+ */
+function generateIds_(payload) {
+    var generated = {};
+
+    var tableKeys = ['trades', 'cashMovements', 'lotActions'];
+    for (var t = 0; t < tableKeys.length; t++) {
+        var key = tableKeys[t];
+        var rows = payload[key] || [];
+        if (rows.length === 0) continue;
+
+        var def = TABLE_DEFS_[key];
+        var idField = def.idField;
+        var prefix = ID_PREFIXES_[key];
+
+        // Find rows that need IDs
+        var needsId = [];
+        for (var i = 0; i < rows.length; i++) {
+            var val = rows[i][idField];
+            if (val === undefined || val === null || val === '') {
+                needsId.push(i);
+            }
+        }
+        if (needsId.length === 0) continue;
+
+        // Find max existing numeric suffix
+        var maxNum = 0;
+        var prefixRe = new RegExp('^' + prefix + '(\\d+)$');
+
+        // Scan existing sheet data
+        try {
+            var existing = readTable(def.sheetName);
+            for (var e = 0; e < existing.length; e++) {
+                var m = prefixRe.exec(existing[e][idField]);
+                if (m) {
+                    var n = parseInt(m[1], 10);
+                    if (n > maxNum) maxNum = n;
+                }
+            }
+        } catch (err) { /* sheet may not exist yet */ }
+
+        // Scan IDs already provided in this batch
+        for (var b = 0; b < rows.length; b++) {
+            var bm = prefixRe.exec(rows[b][idField]);
+            if (bm) {
+                var bn = parseInt(bm[1], 10);
+                if (bn > maxNum) maxNum = bn;
+            }
+        }
+
+        // Determine padding width (minimum 3)
+        var padWidth = 3;
+        var totalNeeded = maxNum + needsId.length;
+        while (totalNeeded >= Math.pow(10, padWidth)) padWidth++;
+
+        // Assign IDs
+        var assignedIds = [];
+        for (var j = 0; j < needsId.length; j++) {
+            maxNum++;
+            var numStr = String(maxNum);
+            while (numStr.length < padWidth) numStr = '0' + numStr;
+            var newId = prefix + numStr;
+            rows[needsId[j]][idField] = newId;
+            assignedIds.push(newId);
+        }
+
+        generated[key] = assignedIds;
+    }
+
+    return generated;
+}
 
 /* ─── Validation ─── */
 
@@ -390,6 +468,9 @@ function runValidation_(payload) {
         return { status: 'error', errors: [{ code: 'INPUT_PARSE_ERROR', message: 'At least one of trades, cashMovements, or lotActions must be non-empty' }] };
     }
 
+    // Step 0: Auto-generate missing IDs
+    var generatedIds = generateIds_(payload);
+
     // Step 1: Schema validation
     if (trades.length > 0)
         errors = errors.concat(validateRows_(trades, 'Trades', TRADE_FIELDS_));
@@ -413,7 +494,9 @@ function runValidation_(payload) {
         return { status: 'error', errors: errors };
     }
 
-    return { status: 'ok', appended: { trades: trades.length, cashMovements: cashMovements.length, lotActions: lotActions.length } };
+    var result = { status: 'ok', appended: { trades: trades.length, cashMovements: cashMovements.length, lotActions: lotActions.length } };
+    if (Object.keys(generatedIds).length > 0) result.generatedIds = generatedIds;
+    return result;
 }
 
 /* ─── Ingest pipeline ─── */
@@ -442,7 +525,7 @@ function runIngest_(payload) {
         // Run rebuild
         rebuildAllDerived();
 
-        return {
+        var ingestResult = {
             status: 'ok',
             appended: {
                 trades: (payload.trades || []).length,
@@ -451,6 +534,8 @@ function runIngest_(payload) {
             },
             rebuild: 'success'
         };
+        if (validationResult.generatedIds) ingestResult.generatedIds = validationResult.generatedIds;
+        return ingestResult;
 
     } catch (err) {
         // Rollback: delete appended rows in reverse order

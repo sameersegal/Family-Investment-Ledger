@@ -105,7 +105,8 @@
                 "SELL_PROCEEDS",
                 "SALE_PROCEEDS",
                 "REINVESTMENT",
-                "REPATRIATION"
+                "REPATRIATION",
+                "OPENING_BALANCE"
             ]
         },
         "ConfigRow": {

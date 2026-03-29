@@ -167,6 +167,16 @@ test('invalid cash category returns error', function () {
     assert.strictEqual(result[0].field, 'Category');
 });
 
+test('OPENING_BALANCE category is valid', function () {
+    var result = context.validateRows_([{
+        CashTxnId: 'CM_TEST2', TxnDate: '2025-01-01', OwnerId: 'ALICE',
+        AccountId: 'ACCT001', Currency: 'USD', Amount: 5000,
+        Category: 'OPENING_BALANCE', LinkedTradeId: '', LinkedActionId: '',
+        IsForeignIncome: 'FALSE', Notes: '', SourceRef: 'TEST'
+    }], 'CashMovements', context.CASH_MOVEMENT_FIELDS_);
+    assert.strictEqual(result.length, 0, 'Expected no errors, got: ' + JSON.stringify(result));
+});
+
 test('multiple errors collected in single pass', function () {
     var result = context.validateRows_([{
         // Missing TradeId, invalid Side, negative Quantity
@@ -301,6 +311,120 @@ test('runValidation_ catches schema errors before FK checks', function () {
     // Should have schema errors but NOT FK errors (since we stop early)
     var hasFKError = result.errors.some(function (e) { return e.code === 'FK_INVALID'; });
     assert.strictEqual(hasFKError, false, 'FK checks should not run when schema validation fails');
+});
+
+// ── Auto-increment ID tests ──
+
+console.log('\nAuto-increment IDs:');
+
+test('generateIds_ assigns T009 for trades (existing T001-T008)', function () {
+    var payload = {
+        trades: [{
+            TradeDate: '2025-06-15', OwnerId: 'ALICE',
+            BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL',
+            Side: 'BUY', Quantity: 10, Price: 150, Fees: 5,
+            FXRateToINR: 83, Notes: '', SourceRef: 'TEST'
+        }],
+        cashMovements: [],
+        lotActions: []
+    };
+    var generated = context.generateIds_(payload);
+    assert.strictEqual(generated.trades.length, 1);
+    assert.strictEqual(generated.trades[0], 'T009');
+    assert.strictEqual(payload.trades[0].TradeId, 'T009');
+});
+
+test('generateIds_ assigns CM009 for cash movements (existing CM001-CM008)', function () {
+    var payload = {
+        trades: [],
+        cashMovements: [{
+            TxnDate: '2025-06-15', OwnerId: 'ALICE',
+            AccountId: 'ACCT001', Currency: 'USD', Amount: 500,
+            Category: 'DEPOSIT', LinkedTradeId: '', LinkedActionId: '',
+            IsForeignIncome: 'FALSE', Notes: '', SourceRef: 'TEST'
+        }],
+        lotActions: []
+    };
+    var generated = context.generateIds_(payload);
+    assert.strictEqual(generated.cashMovements.length, 1);
+    assert.strictEqual(generated.cashMovements[0], 'CM009');
+    assert.strictEqual(payload.cashMovements[0].CashTxnId, 'CM009');
+});
+
+test('generateIds_ assigns sequential IDs for multiple rows', function () {
+    var payload = {
+        trades: [
+            { TradeDate: '2025-06-15', OwnerId: 'ALICE', BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL', Side: 'BUY', Quantity: 10, Price: 150, Fees: 5, FXRateToINR: 83, Notes: '', SourceRef: 'TEST' },
+            { TradeDate: '2025-06-16', OwnerId: 'ALICE', BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL', Side: 'BUY', Quantity: 5, Price: 155, Fees: 5, FXRateToINR: 83, Notes: '', SourceRef: 'TEST' }
+        ],
+        cashMovements: [],
+        lotActions: []
+    };
+    var generated = context.generateIds_(payload);
+    assert.strictEqual(generated.trades.length, 2);
+    assert.strictEqual(generated.trades[0], 'T009');
+    assert.strictEqual(generated.trades[1], 'T010');
+});
+
+test('generateIds_ skips rows that already have IDs', function () {
+    var payload = {
+        trades: [
+            { TradeId: 'MANUAL01', TradeDate: '2025-06-15', OwnerId: 'ALICE', BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL', Side: 'BUY', Quantity: 10, Price: 150, Fees: 5, FXRateToINR: 83, Notes: '', SourceRef: 'TEST' },
+            { TradeDate: '2025-06-16', OwnerId: 'ALICE', BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL', Side: 'BUY', Quantity: 5, Price: 155, Fees: 5, FXRateToINR: 83, Notes: '', SourceRef: 'TEST' }
+        ],
+        cashMovements: [],
+        lotActions: []
+    };
+    var generated = context.generateIds_(payload);
+    assert.strictEqual(payload.trades[0].TradeId, 'MANUAL01');
+    assert.strictEqual(generated.trades.length, 1);
+    assert.strictEqual(generated.trades[0], 'T009');
+    assert.strictEqual(payload.trades[1].TradeId, 'T009');
+});
+
+test('generateIds_ considers batch IDs when computing max', function () {
+    var payload = {
+        trades: [
+            { TradeId: 'T100', TradeDate: '2025-06-15', OwnerId: 'ALICE', BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL', Side: 'BUY', Quantity: 10, Price: 150, Fees: 5, FXRateToINR: 83, Notes: '', SourceRef: 'TEST' },
+            { TradeDate: '2025-06-16', OwnerId: 'ALICE', BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL', Side: 'BUY', Quantity: 5, Price: 155, Fees: 5, FXRateToINR: 83, Notes: '', SourceRef: 'TEST' }
+        ],
+        cashMovements: [],
+        lotActions: []
+    };
+    var generated = context.generateIds_(payload);
+    assert.strictEqual(generated.trades.length, 1);
+    assert.strictEqual(generated.trades[0], 'T101');
+});
+
+test('runValidation_ returns generatedIds in response', function () {
+    var result = context.runValidation_({
+        trades: [{
+            TradeDate: '2025-06-15', OwnerId: 'ALICE',
+            BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL',
+            Side: 'BUY', Quantity: 10, Price: 150, Fees: 5,
+            FXRateToINR: 83, Notes: '', SourceRef: 'TEST'
+        }],
+        cashMovements: [],
+        lotActions: []
+    });
+    assert.strictEqual(result.status, 'ok');
+    assert.ok(result.generatedIds, 'Expected generatedIds in response');
+    assert.ok(result.generatedIds.trades.length === 1);
+});
+
+test('no generatedIds key when all IDs provided', function () {
+    var result = context.runValidation_({
+        trades: [{
+            TradeId: 'MANUAL_TEST', TradeDate: '2025-06-15', OwnerId: 'ALICE',
+            BrokerId: 'BROKER1', AccountId: 'ACCT001', SecurityId: 'AAPL',
+            Side: 'BUY', Quantity: 10, Price: 150, Fees: 5,
+            FXRateToINR: 83, Notes: '', SourceRef: 'TEST'
+        }],
+        cashMovements: [],
+        lotActions: []
+    });
+    assert.strictEqual(result.status, 'ok');
+    assert.strictEqual(result.generatedIds, undefined, 'Should not have generatedIds when all provided');
 });
 
 // ── Summary ──

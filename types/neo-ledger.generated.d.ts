@@ -70,7 +70,8 @@ export type CashCategory =
   | 'SELL_PROCEEDS'
   | 'SALE_PROCEEDS'
   | 'REINVESTMENT'
-  | 'REPATRIATION';
+  | 'REPATRIATION'
+  | 'OPENING_BALANCE';
 /**
  * This interface was referenced by `NeoLedgerDataModelRegistry`'s JSON-Schema
  * via the `definition` "AssertionRow".
@@ -487,7 +488,7 @@ export interface ParserPositionTransaction {
  */
 export interface ParserCashTransaction {
   date: IsoDate;
-  type: 'dividend' | 'interest' | 'fee' | 'deposit' | 'withdrawal' | 'forex' | 'tax' | 'other';
+  type: 'buy' | 'sell' | 'dividend' | 'interest' | 'fee' | 'deposit' | 'withdrawal' | 'forex' | 'tax' | 'other';
   description: StringOrBlank;
   amount: number;
   currency: Identifier;
