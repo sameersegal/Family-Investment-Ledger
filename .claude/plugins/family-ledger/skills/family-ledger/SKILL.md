@@ -1,5 +1,5 @@
 ---
-name: ledger
+name: family-ledger
 description: Query and manage the Neo Ledger family investment portfolio. Use when the user asks about portfolio data, securities, entities, trades, cash movements, config, tax rules, or wants to ingest new transactions.
 allowed-tools: Bash(curl *)
 argument-hint: [config|entities|securities|schema|validate|ingest]
