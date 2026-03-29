@@ -1,5 +1,4 @@
 {
-  "$schema": "https://code.claude.com/schemas/marketplace.json",
   "name": "family-ledger",
   "owner": {
     "name": "sameersegal",
@@ -8,7 +7,7 @@
   "plugins": [
     {
       "name": "family-ledger",
-      "source": ".claude-plugin",
+      "source": ".",
       "description": "Query and manage a family investment portfolio powered by Neo Ledger"
     }
   ]
