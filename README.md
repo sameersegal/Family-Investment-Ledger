@@ -145,7 +145,7 @@ The repository includes a JSON Schema registry at `schema/neo-ledger-data-model.
 - `Helpers.js` uses the generated type map so `readTable("Trades")`, `readTable("CashMovements")`, and similar calls resolve to table-specific row arrays in the editor.
 - Generated type files and schema files are local-only artifacts and are excluded from Apps Script uploads.
 
-### Using clasp CLI
+### Apps Script Deployment with clasp
 
 [clasp](https://github.com/google/clasp) is Google's command-line tool for managing Apps Script projects.
 
@@ -155,19 +155,16 @@ The repository includes a JSON Schema registry at `schema/neo-ledger-data-model.
 npm install -g @google/clasp
 ```
 
-#### Authentication
+#### Authentication and Project Link
 
 ```bash
 clasp login
-```
-
-This opens a browser for Google OAuth. Once authenticated, credentials are stored locally.
-
-#### Cloning an Existing Script
-
-```bash
 clasp clone <scriptId>
 ```
+
+- `clasp login` opens a browser for Google OAuth and stores the login locally in your user profile.
+- `clasp clone <scriptId>` recreates the local project link file `.clasp.json` in this folder.
+- If you run `git clean -fdx`, `.clasp.json` is removed because it is intentionally gitignored, so rerun `clasp clone <scriptId>`.
 
 The Script ID can be found in your Apps Script project under **Project Settings**.
 
@@ -211,6 +208,40 @@ Opens the Apps Script editor in your default browser.
 
 - `clasp push --watch` – Automatically push on file changes
 - `clasp push --force` – Overwrite remote without confirmation
+
+### Downloading Real Data for Local Testing
+
+`download-sheets.js` pulls the live input tabs from the Google Sheet into local `csv/` and `data/` folders so you can run the Node.js test flow against real data.
+
+#### One-Time Setup
+
+1. Go to Google Cloud Console.
+2. Create a project or select an existing one.
+3. Enable the Google Sheets API.
+4. Create an OAuth client ID for a Desktop app.
+5. Download the OAuth client JSON and save it in the repo root as `credentials.json`.
+
+#### Authorize and Download
+
+```bash
+node download-sheets.js
+```
+
+On first run, the script opens an OAuth flow in the browser. After you approve access, it stores a refresh/access token locally in `token.json` and reuses it for later downloads.
+
+#### If You Ran git clean -fdx
+
+- `credentials.json` and `token.json` are both removed because they are intentionally gitignored.
+- `token.json` is disposable; it will be recreated the next time you authorize `download-sheets.js`.
+- `credentials.json` must be downloaded again from Google Cloud if you no longer have a copy.
+
+#### Usage Examples
+
+```bash
+node download-sheets.js
+node download-sheets.js --sheet=Trades
+node download-sheets.js --output=./my-data
+```
 
 ## Main Functions
 
