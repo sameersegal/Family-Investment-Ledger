@@ -19,7 +19,8 @@ const OUTPUT_FILES = [
     'RBI_180_Ageing.json',
     'QC_Equity_By_Account.json',
     'Sensitivity_Data.json',
-    'Sensitivity_Summary.json'
+    'Sensitivity_Summary.json',
+    'Bonds_Current.json'
 ];
 
 function copyFixtureData() {

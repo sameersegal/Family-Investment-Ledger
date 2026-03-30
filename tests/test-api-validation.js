@@ -188,6 +188,67 @@ test('multiple errors collected in single pass', function () {
     assert.ok(result.length >= 3, 'Expected at least 3 errors, got ' + result.length);
 });
 
+// ── LotAction cross-field validation tests ──
+
+console.log('\nLotAction cross-field rules:');
+
+test('valid SPLIT with empty owner/account fields passes', function () {
+    var result = context.validateLotActionRules_([{
+        ActionType: 'SPLIT', SecurityId: 'NFLX',
+        SplitNumerator: 10, SplitDenominator: 1,
+        OwnerFromId: '', OwnerToId: '', BrokerFromId: '', BrokerToId: '',
+        AccountFromId: '', AccountToId: '', SecurityToId: '', Quantity: ''
+    }]);
+    assert.strictEqual(result.length, 0, 'Expected no errors, got: ' + JSON.stringify(result));
+});
+
+test('SPLIT with OwnerFromId populated returns error', function () {
+    var result = context.validateLotActionRules_([{
+        ActionType: 'SPLIT', SecurityId: 'NFLX',
+        SplitNumerator: 10, SplitDenominator: 1,
+        OwnerFromId: 'ALICE', OwnerToId: '', BrokerFromId: '', BrokerToId: '',
+        AccountFromId: '', AccountToId: '', SecurityToId: '', Quantity: ''
+    }]);
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].code, 'INVALID_FOR_SPLIT');
+    assert.strictEqual(result[0].field, 'OwnerFromId');
+});
+
+test('SPLIT with AccountFromId and BrokerId populated returns multiple errors', function () {
+    var result = context.validateLotActionRules_([{
+        ActionType: 'SPLIT', SecurityId: 'NFLX',
+        SplitNumerator: 10, SplitDenominator: 1,
+        OwnerFromId: '', OwnerToId: '', BrokerFromId: 'BROKER1', BrokerToId: '',
+        AccountFromId: 'ACCT001', AccountToId: '', SecurityToId: '', Quantity: ''
+    }]);
+    assert.strictEqual(result.length, 2);
+    var fields = result.map(function (e) { return e.field; }).sort();
+    assert.strictEqual(fields[0], 'AccountFromId');
+    assert.strictEqual(fields[1], 'BrokerFromId');
+});
+
+test('SPLIT missing SplitNumerator returns error', function () {
+    var result = context.validateLotActionRules_([{
+        ActionType: 'SPLIT', SecurityId: 'NFLX',
+        SplitNumerator: '', SplitDenominator: 1,
+        OwnerFromId: '', OwnerToId: '', BrokerFromId: '', BrokerToId: '',
+        AccountFromId: '', AccountToId: '', SecurityToId: '', Quantity: ''
+    }]);
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].code, 'REQUIRED_FOR_SPLIT');
+    assert.strictEqual(result[0].field, 'SplitNumerator');
+});
+
+test('non-SPLIT action types skip SPLIT rules', function () {
+    var result = context.validateLotActionRules_([{
+        ActionType: 'GIFT', SecurityId: 'AAPL',
+        SplitNumerator: '', SplitDenominator: '',
+        OwnerFromId: 'ALICE', OwnerToId: 'BOB', BrokerFromId: '', BrokerToId: '',
+        AccountFromId: 'ACCT001', AccountToId: 'ACCT002', SecurityToId: '', Quantity: 100
+    }]);
+    assert.strictEqual(result.length, 0, 'GIFT should not trigger SPLIT rules');
+});
+
 // ── Referential integrity tests ──
 
 console.log('\nReferential integrity:');
@@ -261,6 +322,32 @@ test('duplicate within batch caught', function () {
     assert.strictEqual(result.length, 1);
     assert.strictEqual(result[0].code, 'DUPLICATE_ID');
     assert.ok(result[0].message.indexOf('duplicated in batch') !== -1);
+});
+
+test('semantic duplicate LotAction (same SecurityId+Date+Type) caught', function () {
+    var result = context.checkDuplicateIds_({
+        trades: [],
+        cashMovements: [],
+        lotActions: [{ ActionId: 'NEW_SPLIT', SecurityId: 'AAPL', ActionDate: '2020-08-31', ActionType: 'SPLIT' }]
+    });
+    var dupAction = result.filter(function (e) { return e.code === 'DUPLICATE_ACTION'; });
+    assert.strictEqual(dupAction.length, 1);
+    assert.ok(dupAction[0].message.indexOf('AAPL') !== -1);
+    assert.ok(dupAction[0].message.indexOf('2020-08-31') !== -1);
+});
+
+test('semantic duplicate LotAction within batch caught', function () {
+    var result = context.checkDuplicateIds_({
+        trades: [],
+        cashMovements: [],
+        lotActions: [
+            { ActionId: 'NFLX_SPLIT_1', SecurityId: 'NFLX', ActionDate: '2025-06-01', ActionType: 'SPLIT' },
+            { ActionId: 'NFLX_SPLIT_2', SecurityId: 'NFLX', ActionDate: '2025-06-01', ActionType: 'SPLIT' }
+        ]
+    });
+    var dupAction = result.filter(function (e) { return e.code === 'DUPLICATE_ACTION'; });
+    assert.strictEqual(dupAction.length, 1);
+    assert.ok(dupAction[0].message.indexOf('duplicated in batch') !== -1);
 });
 
 test('unique new IDs pass', function () {
@@ -425,6 +512,101 @@ test('no generatedIds key when all IDs provided', function () {
     });
     assert.strictEqual(result.status, 'ok');
     assert.strictEqual(result.generatedIds, undefined, 'Should not have generatedIds when all provided');
+});
+
+// ── Bond transaction validation tests ──
+
+console.log('\nBond transaction validation:');
+
+test('valid BUY bond transaction passes', function () {
+    var result = context.validateRows_([{
+        BondTxnId: 'BT_TEST1', TxnDate: '2025-01-15',
+        OwnerId: 'ALICE', AccountId: 'ACCT001', BrokerId: 'BROKER1',
+        BondType: 'TBILL', Side: 'BUY', Currency: 'USD',
+        FaceValue: 100, Price: 98.75, Quantity: 50,
+        FXRate: 83.5, MaturityDate: '2025-04-15',
+        Notes: '', SourceRef: 'TEST'
+    }], 'Bond_Transactions', context.BOND_TXN_FIELDS_);
+    assert.strictEqual(result.length, 0, 'Expected no errors, got: ' + JSON.stringify(result));
+});
+
+test('valid MATURITY bond transaction passes', function () {
+    var result = context.validateRows_([{
+        BondTxnId: 'BT_TEST2', TxnDate: '2025-04-15',
+        OwnerId: 'ALICE', AccountId: 'ACCT001', BrokerId: 'BROKER1',
+        BondType: 'TBILL', Side: 'MATURITY', Currency: 'USD',
+        FaceValue: 100, Price: 100, Quantity: 50,
+        FXRate: 84.2, MaturityDate: '2025-04-15',
+        Notes: '', SourceRef: 'TEST'
+    }], 'Bond_Transactions', context.BOND_TXN_FIELDS_);
+    assert.strictEqual(result.length, 0, 'Expected no errors, got: ' + JSON.stringify(result));
+});
+
+test('invalid BondType returns error', function () {
+    var result = context.validateRows_([{
+        BondTxnId: 'BT_TEST3', TxnDate: '2025-01-15',
+        OwnerId: 'ALICE', AccountId: 'ACCT001', BrokerId: 'BROKER1',
+        BondType: 'CORPORATE', Side: 'BUY', Currency: 'USD',
+        FaceValue: 100, Price: 98.75, Quantity: 50,
+        FXRate: 83.5, MaturityDate: '2025-04-15',
+        Notes: '', SourceRef: 'TEST'
+    }], 'Bond_Transactions', context.BOND_TXN_FIELDS_);
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].code, 'INVALID_ENUM');
+    assert.strictEqual(result[0].field, 'BondType');
+});
+
+test('invalid Side returns error', function () {
+    var result = context.validateRows_([{
+        BondTxnId: 'BT_TEST4', TxnDate: '2025-01-15',
+        OwnerId: 'ALICE', AccountId: 'ACCT001', BrokerId: 'BROKER1',
+        BondType: 'TBILL', Side: 'SELL', Currency: 'USD',
+        FaceValue: 100, Price: 98.75, Quantity: 50,
+        FXRate: 83.5, MaturityDate: '2025-04-15',
+        Notes: '', SourceRef: 'TEST'
+    }], 'Bond_Transactions', context.BOND_TXN_FIELDS_);
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(result[0].code, 'INVALID_ENUM');
+    assert.strictEqual(result[0].field, 'Side');
+});
+
+test('BondTxnId auto-increment works', function () {
+    var payload = {
+        trades: [],
+        cashMovements: [],
+        lotActions: [],
+        bondTransactions: [{
+            TxnDate: '2025-06-01',
+            OwnerId: 'ALICE', AccountId: 'ACCT001', BrokerId: 'BROKER1',
+            BondType: 'TBILL', Side: 'BUY', Currency: 'USD',
+            FaceValue: 100, Price: 98, Quantity: 25,
+            FXRate: 83, MaturityDate: '2025-09-01',
+            Notes: '', SourceRef: 'TEST'
+        }]
+    };
+    var generated = context.generateIds_(payload);
+    assert.strictEqual(generated.bondTransactions.length, 1);
+    assert.strictEqual(generated.bondTransactions[0], 'BT004');
+    assert.strictEqual(payload.bondTransactions[0].BondTxnId, 'BT004');
+});
+
+test('runValidation_ with bondTransactions-only payload succeeds', function () {
+    var result = context.runValidation_({
+        trades: [],
+        cashMovements: [],
+        lotActions: [],
+        bondTransactions: [{
+            TxnDate: '2025-06-01',
+            OwnerId: 'ALICE', AccountId: 'ACCT001', BrokerId: 'BROKER1',
+            BondType: 'TBILL', Side: 'BUY', Currency: 'USD',
+            FaceValue: 100, Price: 98, Quantity: 25,
+            FXRate: 83, MaturityDate: '2025-09-01',
+            Notes: '', SourceRef: 'TEST'
+        }]
+    });
+    assert.strictEqual(result.status, 'ok');
+    assert.ok(result.generatedIds, 'Expected generatedIds');
+    assert.ok(result.generatedIds.bondTransactions.length === 1);
 });
 
 // ── Summary ──

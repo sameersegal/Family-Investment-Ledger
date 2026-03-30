@@ -109,6 +109,161 @@
                 "OPENING_BALANCE"
             ]
         },
+        "BondType": {
+            "type": "string",
+            "enum": [
+                "TBILL"
+            ]
+        },
+        "BondSide": {
+            "type": "string",
+            "enum": [
+                "BUY",
+                "MATURITY"
+            ]
+        },
+        "BondTransactionRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "BondTxnId",
+                "TxnDate",
+                "OwnerId",
+                "AccountId",
+                "BrokerId",
+                "BondType",
+                "Side",
+                "Currency",
+                "FaceValue",
+                "Price",
+                "Quantity",
+                "FXRate",
+                "MaturityDate",
+                "Notes",
+                "SourceRef"
+            ],
+            "properties": {
+                "BondTxnId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "TxnDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BrokerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BondType": {
+                    "$ref": "#/$defs/BondType"
+                },
+                "Side": {
+                    "$ref": "#/$defs/BondSide"
+                },
+                "Currency": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "FaceValue": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "Price": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "Quantity": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "FXRate": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "MaturityDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "Notes": {
+                    "$ref": "#/$defs/StringOrBlank"
+                },
+                "SourceRef": {
+                    "$ref": "#/$defs/StringOrBlank"
+                }
+            }
+        },
+        "BondCurrentRow": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "OwnerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "AccountId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BrokerId": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "BondType": {
+                    "$ref": "#/$defs/BondType"
+                },
+                "Currency": {
+                    "$ref": "#/$defs/Identifier"
+                },
+                "MaturityDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "Quantity": {
+                    "type": "number"
+                },
+                "FaceValue": {
+                    "type": "number"
+                },
+                "PurchasePrice": {
+                    "type": "number"
+                },
+                "PurchaseDate": {
+                    "$ref": "#/$defs/IsoDate"
+                },
+                "FXRateAtPurchase": {
+                    "type": "number"
+                },
+                "FXRateAtMaturity": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "Status": {
+                    "type": "string",
+                    "enum": ["ACTIVE", "MATURED"]
+                },
+                "InvestedAmountLocal": {
+                    "type": "number"
+                },
+                "MaturityAmountLocal": {
+                    "type": "number"
+                },
+                "GainLocal": {
+                    "type": "number"
+                },
+                "InvestedAmountINR": {
+                    "type": "number"
+                },
+                "MaturityAmountINR": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "GainINR": {
+                    "$ref": "#/$defs/NumberOrBlank"
+                },
+                "HoldingDays": {
+                    "type": "number"
+                },
+                "FY": {
+                    "type": "string"
+                }
+            }
+        },
         "ConfigRow": {
             "type": "object",
             "additionalProperties": false,

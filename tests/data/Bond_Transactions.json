@@ -1,0 +1,53 @@
+[
+    {
+        "BondTxnId": "BT001",
+        "TxnDate": "2025-01-15",
+        "OwnerId": "ALICE",
+        "AccountId": "ACCT001",
+        "BrokerId": "BROKER1",
+        "BondType": "TBILL",
+        "Side": "BUY",
+        "Currency": "USD",
+        "FaceValue": 100,
+        "Price": 98.75,
+        "Quantity": 50,
+        "FXRate": 83.5,
+        "MaturityDate": "2025-04-15",
+        "Notes": "91-day T-Bill",
+        "SourceRef": "BROKER-2025-01"
+    },
+    {
+        "BondTxnId": "BT002",
+        "TxnDate": "2025-04-15",
+        "OwnerId": "ALICE",
+        "AccountId": "ACCT001",
+        "BrokerId": "BROKER1",
+        "BondType": "TBILL",
+        "Side": "MATURITY",
+        "Currency": "USD",
+        "FaceValue": 100,
+        "Price": 100,
+        "Quantity": 50,
+        "FXRate": 84.2,
+        "MaturityDate": "2025-04-15",
+        "Notes": "",
+        "SourceRef": "BROKER-2025-04"
+    },
+    {
+        "BondTxnId": "BT003",
+        "TxnDate": "2025-10-01",
+        "OwnerId": "ALICE",
+        "AccountId": "ACCT001",
+        "BrokerId": "BROKER1",
+        "BondType": "TBILL",
+        "Side": "BUY",
+        "Currency": "USD",
+        "FaceValue": 100,
+        "Price": 97.50,
+        "Quantity": 100,
+        "FXRate": 84.0,
+        "MaturityDate": "2026-03-31",
+        "Notes": "182-day T-Bill",
+        "SourceRef": "BROKER-2025-10"
+    }
+]

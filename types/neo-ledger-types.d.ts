@@ -1,5 +1,7 @@
 import type {
     AssertionRow,
+    BondCurrentRow,
+    BondTransactionRow,
     CashBalanceRow,
     CashMovementRow,
     ConfigRow,
@@ -38,6 +40,8 @@ export interface TableNameMap {
     QC_Equity_By_Account: QCEquityByAccountRow[];
     Sensitivity_Data: SensitivityDataDocument[];
     Sensitivity_Summary: SensitivitySummaryRow[];
+    Bond_Transactions: BondTransactionRow[];
+    Bonds_Current: BondCurrentRow[];
 }
 
 export type TableName = keyof TableNameMap;

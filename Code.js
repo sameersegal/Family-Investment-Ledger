@@ -1022,6 +1022,97 @@ function buildSensitivitySummary_(analysis) {
   writeTable("Sensitivity_Summary", summaryRows);
 }
 
+/**** Rebuild Bonds: Bond_Transactions → Bonds_Current ****/
+function rebuildBonds() {
+  const txns = readTable("Bond_Transactions");
+  if (txns.length === 0) {
+    writeTable("Bonds_Current", []);
+    return;
+  }
+
+  // Separate BUY and MATURITY transactions
+  const buys = txns.filter(t => t.Side === "BUY");
+  const maturities = txns.filter(t => t.Side === "MATURITY");
+
+  // Index maturity transactions by match key
+  const maturityMap = {};
+  maturities.forEach(m => {
+    const key = [m.OwnerId, m.AccountId, m.BrokerId, m.MaturityDate].join("|");
+    maturityMap[key] = m;
+  });
+
+  // Group BUY transactions by match key
+  const buyGroups = {};
+  buys.forEach(b => {
+    const key = [b.OwnerId, b.AccountId, b.BrokerId, b.MaturityDate].join("|");
+    if (!buyGroups[key]) buyGroups[key] = [];
+    buyGroups[key].push(b);
+  });
+
+  // Build Bonds_Current rows
+  const rows = [];
+  Object.keys(buyGroups).forEach(key => {
+    const group = buyGroups[key];
+    const first = group[0];
+
+    // Aggregate: sum quantity, weighted average purchase price
+    let totalQty = 0;
+    let totalCost = 0;
+    let earliestDate = group[0].TxnDate;
+    group.forEach(b => {
+      const qty = Number(b.Quantity);
+      const price = Number(b.Price);
+      totalQty += qty;
+      totalCost += qty * price;
+      if (b.TxnDate < earliestDate) earliestDate = b.TxnDate;
+    });
+    const avgPrice = totalCost / totalQty;
+    const faceValue = Number(first.FaceValue);
+    const fxPurchase = Number(first.FXRate);
+
+    // Check for matching maturity
+    const mat = maturityMap[key];
+    const isMatured = !!mat;
+    const fxMaturity = isMatured ? Number(mat.FXRate) : "";
+
+    const investedLocal = totalQty * avgPrice;
+    const maturityLocal = totalQty * faceValue;
+    const gainLocal = maturityLocal - investedLocal;
+    const investedINR = investedLocal * fxPurchase;
+    const maturityINR = isMatured ? maturityLocal * fxMaturity : "";
+    const gainINR = isMatured ? maturityINR - investedINR : "";
+
+    const holdingDays = daysBetween(new Date(earliestDate), new Date(first.MaturityDate));
+    const fy = fyFromDate(first.MaturityDate);
+
+    rows.push({
+      OwnerId: first.OwnerId,
+      AccountId: first.AccountId,
+      BrokerId: first.BrokerId,
+      BondType: first.BondType,
+      Currency: first.Currency,
+      MaturityDate: first.MaturityDate,
+      Quantity: totalQty,
+      FaceValue: faceValue,
+      PurchasePrice: avgPrice,
+      PurchaseDate: earliestDate,
+      FXRateAtPurchase: fxPurchase,
+      FXRateAtMaturity: isMatured ? fxMaturity : "",
+      Status: isMatured ? "MATURED" : "ACTIVE",
+      InvestedAmountLocal: investedLocal,
+      MaturityAmountLocal: maturityLocal,
+      GainLocal: gainLocal,
+      InvestedAmountINR: investedINR,
+      MaturityAmountINR: maturityINR,
+      GainINR: gainINR,
+      HoldingDays: holdingDays,
+      FY: fy
+    });
+  });
+
+  writeTable("Bonds_Current", rows);
+}
+
 /**** Run All ****/
 function rebuildAllDerived() {
   rebuildLots();
@@ -1030,6 +1121,8 @@ function rebuildAllDerived() {
   buildTaxSummaryByFY();
   computeCashBalances();
   computeRBI180DayExposure();
+
+  rebuildBonds();
 
   buildPortfolioSheetFromLedger_("IND Portfolio", "India", "INDIA");
   buildPortfolioSheetFromLedger_("US Portfolio", "US", "USA");

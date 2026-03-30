@@ -74,6 +74,16 @@ export type CashCategory =
   | 'OPENING_BALANCE';
 /**
  * This interface was referenced by `NeoLedgerDataModelRegistry`'s JSON-Schema
+ * via the `definition` "BondType".
+ */
+export type BondType = 'TBILL';
+/**
+ * This interface was referenced by `NeoLedgerDataModelRegistry`'s JSON-Schema
+ * via the `definition` "BondSide".
+ */
+export type BondSide = 'BUY' | 'MATURITY';
+/**
+ * This interface was referenced by `NeoLedgerDataModelRegistry`'s JSON-Schema
  * via the `definition` "AssertionRow".
  */
 export type AssertionRow = {
@@ -184,6 +194,54 @@ export type SensitivitySummaryFile = SensitivitySummaryRow[];
  * Reusable JSON Schema definitions for Neo Ledger input tables, derived tables, and the bank-statement parser adapter contract. Validate individual files with fragment refs such as #/$defs/TradesFile or #/$defs/CashMovementsFile.
  */
 export interface NeoLedgerDataModelRegistry {}
+/**
+ * This interface was referenced by `NeoLedgerDataModelRegistry`'s JSON-Schema
+ * via the `definition` "BondTransactionRow".
+ */
+export interface BondTransactionRow {
+  BondTxnId: Identifier;
+  TxnDate: IsoDate;
+  OwnerId: Identifier;
+  AccountId: Identifier;
+  BrokerId: Identifier;
+  BondType: BondType;
+  Side: BondSide;
+  Currency: Identifier;
+  FaceValue: number;
+  Price: number;
+  Quantity: number;
+  FXRate: number;
+  MaturityDate: IsoDate;
+  Notes: StringOrBlank;
+  SourceRef: StringOrBlank;
+}
+/**
+ * This interface was referenced by `NeoLedgerDataModelRegistry`'s JSON-Schema
+ * via the `definition` "BondCurrentRow".
+ */
+export interface BondCurrentRow {
+  OwnerId?: Identifier;
+  AccountId?: Identifier;
+  BrokerId?: Identifier;
+  BondType?: BondType;
+  Currency?: Identifier;
+  MaturityDate?: IsoDate;
+  Quantity?: number;
+  FaceValue?: number;
+  PurchasePrice?: number;
+  PurchaseDate?: IsoDate;
+  FXRateAtPurchase?: number;
+  FXRateAtMaturity?: NumberOrBlank;
+  Status?: 'ACTIVE' | 'MATURED';
+  InvestedAmountLocal?: number;
+  MaturityAmountLocal?: number;
+  GainLocal?: number;
+  InvestedAmountINR?: number;
+  MaturityAmountINR?: NumberOrBlank;
+  GainINR?: NumberOrBlank;
+  HoldingDays?: number;
+  FY?: string;
+}
 /**
  * This interface was referenced by `NeoLedgerDataModelRegistry`'s JSON-Schema
  * via the `definition` "ConfigRow".

@@ -104,6 +104,11 @@ function handleSchema_() {
                 fields: LOT_ACTION_FIELDS_,
                 required: ['ActionId', 'ActionDate', 'ActionType', 'OwnerFromId', 'OwnerToId', 'BrokerFromId', 'BrokerToId', 'AccountFromId', 'AccountToId', 'SecurityId', 'SecurityToId', 'SplitNumerator', 'SplitDenominator', 'Quantity', 'Notes', 'SourceRef'],
                 idField: 'ActionId'
+            },
+            bondTransactions: {
+                fields: BOND_TXN_FIELDS_,
+                required: ['BondTxnId', 'TxnDate', 'OwnerId', 'AccountId', 'BrokerId', 'BondType', 'Side', 'Currency', 'FaceValue', 'Price', 'Quantity', 'FXRate', 'MaturityDate', 'Notes', 'SourceRef'],
+                idField: 'BondTxnId'
             }
         }
     };
@@ -161,15 +166,34 @@ var LOT_ACTION_FIELDS_ = {
     SourceRef:       { type: 'string' }
 };
 
+var BOND_TXN_FIELDS_ = {
+    BondTxnId:   { type: 'identifier', autoGenerate: true },
+    TxnDate:     { type: 'date' },
+    OwnerId:     { type: 'identifier' },
+    AccountId:   { type: 'identifier' },
+    BrokerId:    { type: 'identifier' },
+    BondType:    { type: 'enum', values: ['TBILL'] },
+    Side:        { type: 'enum', values: ['BUY', 'MATURITY'] },
+    Currency:    { type: 'identifier' },
+    FaceValue:   { type: 'number', exclusiveMin: 0 },
+    Price:       { type: 'number', exclusiveMin: 0 },
+    Quantity:    { type: 'number', exclusiveMin: 0 },
+    FXRate:      { type: 'number', exclusiveMin: 0 },
+    MaturityDate: { type: 'date' },
+    Notes:       { type: 'string' },
+    SourceRef:   { type: 'string' }
+};
+
 var TABLE_DEFS_ = {
     trades:        { sheetName: 'Trades',        fields: TRADE_FIELDS_,         idField: 'TradeId' },
     cashMovements: { sheetName: 'CashMovements', fields: CASH_MOVEMENT_FIELDS_, idField: 'CashTxnId' },
-    lotActions:    { sheetName: 'LotActions',     fields: LOT_ACTION_FIELDS_,    idField: 'ActionId' }
+    lotActions:    { sheetName: 'LotActions',     fields: LOT_ACTION_FIELDS_,    idField: 'ActionId' },
+    bondTransactions: { sheetName: 'Bond_Transactions', fields: BOND_TXN_FIELDS_, idField: 'BondTxnId' }
 };
 
 /* ─── Auto-increment ID generation ─── */
 
-var ID_PREFIXES_ = { trades: 'T', cashMovements: 'CM', lotActions: 'L' };
+var ID_PREFIXES_ = { trades: 'T', cashMovements: 'CM', lotActions: 'L', bondTransactions: 'BT' };
 
 /**
  * For each table in the payload, fills in missing IDs with auto-incremented values.
@@ -178,7 +202,7 @@ var ID_PREFIXES_ = { trades: 'T', cashMovements: 'CM', lotActions: 'L' };
 function generateIds_(payload) {
     var generated = {};
 
-    var tableKeys = ['trades', 'cashMovements', 'lotActions'];
+    var tableKeys = ['trades', 'cashMovements', 'lotActions', 'bondTransactions'];
     for (var t = 0; t < tableKeys.length; t++) {
         var key = tableKeys[t];
         var rows = payload[key] || [];
@@ -389,6 +413,18 @@ function checkReferentialIntegrity_(payload) {
             errors.push({ table: 'LotActions', row: a, field: 'SecurityToId', value: la.SecurityToId, code: 'FK_INVALID', message: "SecurityToId '" + la.SecurityToId + "' not found in Securities" });
     }
 
+    // Check bond transactions
+    var bondTxns = payload.bondTransactions || [];
+    for (var b = 0; b < bondTxns.length; b++) {
+        var bt = bondTxns[b];
+        if (bt.OwnerId && !ownerIds[bt.OwnerId])
+            errors.push({ table: 'Bond_Transactions', row: b, field: 'OwnerId', value: bt.OwnerId, code: 'FK_INVALID', message: "OwnerId '" + bt.OwnerId + "' not found in Entities (OWNER)" });
+        if (bt.AccountId && !accountIds[bt.AccountId])
+            errors.push({ table: 'Bond_Transactions', row: b, field: 'AccountId', value: bt.AccountId, code: 'FK_INVALID', message: "AccountId '" + bt.AccountId + "' not found in Entities (ACCOUNT)" });
+        if (bt.BrokerId && !brokerIds[bt.BrokerId])
+            errors.push({ table: 'Bond_Transactions', row: b, field: 'BrokerId', value: bt.BrokerId, code: 'FK_INVALID', message: "BrokerId '" + bt.BrokerId + "' not found in Entities (BROKER)" });
+    }
+
     return errors;
 }
 
@@ -399,6 +435,7 @@ function checkDuplicateIds_(payload) {
     var existingTradeIds = {};
     var existingCashIds = {};
     var existingActionIds = {};
+    var existingBondTxnIds = {};
 
     try {
         var trades = readTable('Trades');
@@ -413,6 +450,11 @@ function checkDuplicateIds_(payload) {
     try {
         var actions = readTable('LotActions');
         for (var k = 0; k < actions.length; k++) existingActionIds[actions[k].ActionId] = true;
+    } catch (e) { /* sheet may not exist yet */ }
+
+    try {
+        var bondTxnsExisting = readTable('Bond_Transactions');
+        for (var l = 0; l < bondTxnsExisting.length; l++) existingBondTxnIds[bondTxnsExisting[l].BondTxnId] = true;
     } catch (e) { /* sheet may not exist yet */ }
 
     // Check new trades
@@ -451,6 +493,68 @@ function checkDuplicateIds_(payload) {
         batchActionIds[aid] = true;
     }
 
+    // Semantic duplicate check for LotActions: SecurityId + ActionDate + ActionType
+    if (newActions.length > 0) {
+        var existingActionKeys = {};
+        try {
+            var allActions = readTable('LotActions');
+            for (var ea = 0; ea < allActions.length; ea++) {
+                var ekey = allActions[ea].SecurityId + '|' + allActions[ea].ActionDate + '|' + allActions[ea].ActionType;
+                existingActionKeys[ekey] = true;
+            }
+        } catch (e) { /* sheet may not exist yet */ }
+
+        var batchActionKeys = {};
+        for (var na = 0; na < newActions.length; na++) {
+            var nkey = newActions[na].SecurityId + '|' + newActions[na].ActionDate + '|' + newActions[na].ActionType;
+            if (existingActionKeys[nkey])
+                errors.push({ table: 'LotActions', row: na, field: 'SecurityId', value: nkey, code: 'DUPLICATE_ACTION', message: "LotAction for " + newActions[na].SecurityId + " on " + newActions[na].ActionDate + " (" + newActions[na].ActionType + ") already exists" });
+            if (batchActionKeys[nkey])
+                errors.push({ table: 'LotActions', row: na, field: 'SecurityId', value: nkey, code: 'DUPLICATE_ACTION', message: "LotAction for " + newActions[na].SecurityId + " on " + newActions[na].ActionDate + " (" + newActions[na].ActionType + ") duplicated in batch" });
+            batchActionKeys[nkey] = true;
+        }
+    }
+
+    // Check new bond transactions
+    var newBondTxns = payload.bondTransactions || [];
+    var batchBondTxnIds = {};
+    for (var bd = 0; bd < newBondTxns.length; bd++) {
+        var btid = newBondTxns[bd].BondTxnId;
+        if (existingBondTxnIds[btid])
+            errors.push({ table: 'Bond_Transactions', row: bd, field: 'BondTxnId', value: btid, code: 'DUPLICATE_ID', message: "BondTxnId '" + btid + "' already exists" });
+        if (batchBondTxnIds[btid])
+            errors.push({ table: 'Bond_Transactions', row: bd, field: 'BondTxnId', value: btid, code: 'DUPLICATE_ID', message: "BondTxnId '" + btid + "' duplicated in batch" });
+        batchBondTxnIds[btid] = true;
+    }
+
+    return errors;
+}
+
+/* ─── Cross-field validation for LotActions ─── */
+
+var SPLIT_MUST_BE_EMPTY_ = ['OwnerFromId', 'OwnerToId', 'BrokerFromId', 'BrokerToId', 'AccountFromId', 'AccountToId', 'SecurityToId', 'Quantity'];
+var SPLIT_MUST_BE_FILLED_ = ['SecurityId', 'SplitNumerator', 'SplitDenominator'];
+
+function validateLotActionRules_(lotActions) {
+    var errors = [];
+    for (var i = 0; i < lotActions.length; i++) {
+        var la = lotActions[i];
+        if (la.ActionType !== 'SPLIT') continue;
+
+        for (var e = 0; e < SPLIT_MUST_BE_EMPTY_.length; e++) {
+            var field = SPLIT_MUST_BE_EMPTY_[e];
+            if (la[field] !== undefined && la[field] !== null && la[field] !== '') {
+                errors.push({ table: 'LotActions', row: i, field: field, value: la[field], code: 'INVALID_FOR_SPLIT', message: field + ' must be empty for SPLIT actions (splits are global)' });
+            }
+        }
+
+        for (var r = 0; r < SPLIT_MUST_BE_FILLED_.length; r++) {
+            var rfield = SPLIT_MUST_BE_FILLED_[r];
+            if (la[rfield] === undefined || la[rfield] === null || la[rfield] === '') {
+                errors.push({ table: 'LotActions', row: i, field: rfield, value: la[rfield], code: 'REQUIRED_FOR_SPLIT', message: rfield + ' is required for SPLIT actions' });
+            }
+        }
+    }
     return errors;
 }
 
@@ -463,9 +567,10 @@ function runValidation_(payload) {
     var trades = payload.trades || [];
     var cashMovements = payload.cashMovements || [];
     var lotActions = payload.lotActions || [];
+    var bondTransactions = payload.bondTransactions || [];
 
-    if (trades.length === 0 && cashMovements.length === 0 && lotActions.length === 0) {
-        return { status: 'error', errors: [{ code: 'INPUT_PARSE_ERROR', message: 'At least one of trades, cashMovements, or lotActions must be non-empty' }] };
+    if (trades.length === 0 && cashMovements.length === 0 && lotActions.length === 0 && bondTransactions.length === 0) {
+        return { status: 'error', errors: [{ code: 'INPUT_PARSE_ERROR', message: 'At least one of trades, cashMovements, lotActions, or bondTransactions must be non-empty' }] };
     }
 
     // Step 0: Auto-generate missing IDs
@@ -478,23 +583,27 @@ function runValidation_(payload) {
         errors = errors.concat(validateRows_(cashMovements, 'CashMovements', CASH_MOVEMENT_FIELDS_));
     if (lotActions.length > 0)
         errors = errors.concat(validateRows_(lotActions, 'LotActions', LOT_ACTION_FIELDS_));
+    if (bondTransactions.length > 0)
+        errors = errors.concat(validateRows_(bondTransactions, 'Bond_Transactions', BOND_TXN_FIELDS_));
 
-    // Stop early if schema errors (FK checks would be unreliable)
+    // Step 1b: Cross-field validation (runs even if schema has errors in other tables)
+    if (lotActions.length > 0)
+        errors = errors.concat(validateLotActionRules_(lotActions));
+
+    // Stop early if schema/cross-field errors (FK checks would be unreliable)
     if (errors.length > 0) {
         return { status: 'error', errors: errors };
     }
 
-    // Step 2: Referential integrity
+    // Step 2: Referential integrity + Duplicate IDs (independent, run together)
     errors = errors.concat(checkReferentialIntegrity_(payload));
-
-    // Step 3: Duplicate IDs
     errors = errors.concat(checkDuplicateIds_(payload));
 
     if (errors.length > 0) {
         return { status: 'error', errors: errors };
     }
 
-    var result = { status: 'ok', appended: { trades: trades.length, cashMovements: cashMovements.length, lotActions: lotActions.length } };
+    var result = { status: 'ok', appended: { trades: trades.length, cashMovements: cashMovements.length, lotActions: lotActions.length, bondTransactions: bondTransactions.length } };
     if (Object.keys(generatedIds).length > 0) result.generatedIds = generatedIds;
     return result;
 }
@@ -511,7 +620,7 @@ function runIngest_(payload) {
     // Append rows to sheets, tracking what was added for rollback
     var appended = [];
     try {
-        var tableKeys = ['trades', 'cashMovements', 'lotActions'];
+        var tableKeys = ['trades', 'cashMovements', 'lotActions', 'bondTransactions'];
         for (var t = 0; t < tableKeys.length; t++) {
             var key = tableKeys[t];
             var rows = payload[key] || [];
@@ -530,7 +639,8 @@ function runIngest_(payload) {
             appended: {
                 trades: (payload.trades || []).length,
                 cashMovements: (payload.cashMovements || []).length,
-                lotActions: (payload.lotActions || []).length
+                lotActions: (payload.lotActions || []).length,
+                bondTransactions: (payload.bondTransactions || []).length
             },
             rebuild: 'success'
         };
